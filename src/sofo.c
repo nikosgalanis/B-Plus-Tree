@@ -6,20 +6,29 @@
 #define AME_ERROR -1 //TODO: change this
 int AM_errno = AME_OK;
 
+#define CALL_BF(call)       \
+{                           \
+  BF_ErrorCode code = call; \
+  if (code != BF_OK) {         \
+    BF_PrintError(code);    \
+    return AME_ERROR;        \
+  }                         \
+}
 
-int AM_CreateIndex(char* fileName, char attrType1, int attrLength1,
+
+int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 									 char attrType2,int attrLength2) {
 	int offset;
-  /* Create the file */
-  BF_CreateFile(fileName);
+	/* Create the file */
+  CALL_BF(BF_CreateFile(fileName));
   /* Open it, to edit the first block */
   int fileDesc;
-  BF_OpenFile(fileName, &fileDesc);
+  CALL_BF(BF_OpenFile(fileName, &fileDesc));
   /* Get access to the first block */
   BF_Block* first_block;
   /* Initialize the first block */
   BF_Block_Init(&first_block);
-  BF_AllocateBlock(fileDesc, first_block);
+  CALL_BF(BF_AllocateBlock(fileDesc, first_block));
   /* Get the total number of available blocks(1) */
   int blocks_num;
   BF_GetBlockCounter(fileDesc, &blocks_num);

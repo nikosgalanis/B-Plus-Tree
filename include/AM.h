@@ -19,7 +19,7 @@ void AM_Init( void );
 
 
 int AM_CreateIndex(
-  char *fileName, /* όνομα αρχείου */
+  const char *fileName, /* όνομα αρχείου */
   char attrType1, /* τύπος πρώτου πεδίου: 'c' (συμβολοσειρά), 'i' (ακέραιος), 'f' (πραγματικός) */
   int attrLength1, /* μήκος πρώτου πεδίου: 4 γιά 'i' ή 'f', 1-255 γιά 'c' */
   char attrType2, /* τύπος πρώτου πεδίου: 'c' (συμβολοσειρά), 'i' (ακέραιος), 'f' (πραγματικός) */

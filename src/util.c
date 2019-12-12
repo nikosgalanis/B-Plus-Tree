@@ -4,9 +4,17 @@
 
 #include "../include/util.h"
 
-int find_index(File_info* open) {
+int find_empty_index() {
   for (int i = 0; i < MAX_OPEN_FILES; ++i) {
-    if (open[i].file_index == EMPTY_FILE)
+    if (Files->open[i].file_index == EMPTY_FILE)
+      return i;
+  }
+  return EMPTY_FILE;
+}
+
+int find_index(int fileDesc) {
+  for (int i = 0; i < MAX_OPEN_FILES; ++i) {
+    if (Files->open[i].file_index == fileDesc)
       return i;
   }
   return EMPTY_FILE;

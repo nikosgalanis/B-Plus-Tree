@@ -5,8 +5,20 @@
 
 extern int AM_errno;
 #define AME_ERROR -1 //TODO: change this
+#define CHAR_SIZE 40
+
+#define CALL_BF(call)       \
+{                           \
+  BF_ErrorCode code = call; \
+  if (code != BF_OK) {         \
+    BF_PrintError(code);    \
+    return AME_ERROR;        \
+  }                         \
+}
+
 
 void AM_Init() {
+	BF_Init(MRU);
 	/* Initialize the files array*/
 	Files = malloc(sizeof(Open_Files));
 	if (Files == NULL) {
@@ -31,7 +43,7 @@ int AM_OpenIndex (char *fileName) {
   int fileDesc;
   BF_OpenFile(fileName,&fileDesc);
 	/* Find the index of the array that we want to insert the file */
-	int index = find_index(Files->open);
+	int index = find_empty_index(Files->open);
 	/* We can not open more files than allowed */
 	if (index == EMPTY_FILE)
 		return AME_ERROR; //TODO: Change to a true error
@@ -67,6 +79,7 @@ int AM_OpenIndex (char *fileName) {
 int AM_CloseIndex (int fileDesc) {
 	/* We want to close the file, thus remove the entry from the open files array */
 	/* We are going to remove the entry, and replace its data with -1 and spaces */
+	int indexDesc = find_index(fileDesc);
 	strcpy(Files->open[indexDesc].file_name,"");
 	Files->open[indexDesc].file_index = EMPTY_FILE;
 	Files->open[indexDesc].total_records = -1;

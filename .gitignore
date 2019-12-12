@@ -3,4 +3,4 @@ build/runner
 !build/.gitkeep
 
 #ignore all the files created
-*.db
+EMP-*
