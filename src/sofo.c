@@ -14,8 +14,3 @@ int AM_CreateIndex(char *fileName,
 	               int attrLength2) {
   return AME_OK;
 }
-
-
-int AM_DestroyIndex(char *fileName) {
-  return AME_OK;
-}
