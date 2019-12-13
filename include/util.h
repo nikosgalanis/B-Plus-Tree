@@ -31,3 +31,4 @@ Open_Files* Files;
 int find_empty_index();
 int find_index(int fileDesc);
 char* concat(const char *s1, const char *s2);
+char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new_block_num);
