@@ -175,10 +175,58 @@ int Create_root(int fileDesc,  void * key ) {
   BF_UnpinBlock(first_data_block);
   BF_UnpinBlock(second_data_block);
   BF_Block_Destroy(&root_block);
-  BF_Block_Destroy(&first_block); 
+  BF_Block_Destroy(&first_block);
   BF_Block_Destroy(&second_data_block);
-  BF_Block_Destroy(&first_data_block); 
+  BF_Block_Destroy(&first_data_block);
   //TODO in insert , call key as a pointer
   //TODO CALL_BF
   return root_block_index;
+}
+
+boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
+  /*Initialize a pointer to the first block, and get its data*/
+  BF_Block* first_block;
+  BF_Block_Init(&first_block);
+  BF_GetBlock(fileDesc, 0, first_block);
+  char* first_block_info = BF_Block_GetData(first_block);
+  int	offset = sizeof(char) + 3 * sizeof(int);
+  /*get the max possible records in a data block*/
+  int max_records;
+  memcpy(&max_records, first_block_info + offset, sizeof(int));
+  BF_Block* block;
+  BF_Block_Init(&block);
+  BF_GetBlock(fileDesc, block_num - 1, block);
+  char* data = BF_Block_GetData(block);
+  if (data[0] != 'D') {
+    printf("Not a data block\n");
+    //TODO Umpin and Destroy
+    return false;
+  }
+  /*Initialize the offset to find where to store the new record*/
+  offset = sizeof(char) + sizeof(int);
+  int total_records;
+  /*If the block is full, return an error*/
+  if (total_records == max_records)
+    return false;
+  int pos = 0;
+  /*traverse all the current records*/
+  for (int i = 0; i < total_records; ++i) {
+    Record* curr_rec;
+    memcpy(curr_rec, data + offset, sizeof(new_record));
+    /*if the key of the record we want to insert is smaller than the current one*/
+    if (new_record.key < curr_rec->key) {
+      /*shift all records to the right to create space*/
+      memmove(data + offset + sizeof(new_record), data + offset, (total_records - i) * sizeof(new_record));
+      /*insert the new record*/
+      memcpy(data + offset, &new_record, sizeof(new_record));
+      //TODO: Unpin and destroy
+      return true;
+    }
+    /*each time, update the offset*/
+    offset += sizeof(new_record);
+   }
+   /*if we haven't yet inserted the record, now its time(at the end of the block)*/
+   memcpy(data + offset, &new_record, sizeof(new_record));
+   //TODO: Unpin and destroy
+   return true;
 }
