@@ -100,17 +100,6 @@ int Create_root(int fileDesc,  void * key ) {
   offset = 2 * sizeof(char) + 4 * sizeof(int);
   memcpy(&keyLength, first_block_info + offset, sizeof(int));
   /*key to a new variable*/
-  void* Thekey;
-  if (keyType == 'c') {
-    char ** Thekey = key;
-  }
-  else if (keyType =='i') {
-    int *Thekey = key;
-  }
-  else {
-    //keyType is f
-    float *Thekey = key;
-  }
   /*Create root block*/
   int root_block_index = -1;
   int blocks_num;
@@ -157,7 +146,7 @@ int Create_root(int fileDesc,  void * key ) {
   offset = sizeof(char) + sizeof(int);
   memcpy(root_block_info + offset, &first_data_block_index, sizeof(int));
   offset = sizeof(char) + 2 * sizeof(int);
-  memcpy(root_block_info + offset, Thekey, keyLength);
+  memcpy(root_block_info + offset, key, keyLength);
   offset = sizeof(char) + 2 * sizeof(int) + keyLength;
   memcpy(root_block_info + offset, &second_data_block_index, sizeof(int));
 
