@@ -113,14 +113,11 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	/* Get first block data */
 	BF_Block_Init(&first_block);
 	BF_GetBlock(fileDesc, 0, first_block);
-  printf("good1\n");
 	char *first_block_info = BF_Block_GetData(first_block);
-  printf("good2\n");
 	/* Get root number */
 	offset = sizeof(char) + sizeof(int);
 	int root_block_int;
 	memcpy(&root_block_int, first_block_info + offset, sizeof(int));
-  printf("good3\n");
 	/* Check if -1 */
 	if (root_block_int == -1) {
 		root_block_int = create_root(fileDesc, value1);
