@@ -38,7 +38,7 @@ void AM_Init() {
 }
 
 
-int AM_OpenIndex (char *fileName) {
+int AM_OpenIndex(char *fileName) {
 	/* Open the file. and catch a possible error */
   int fileDesc;
   BF_OpenFile(fileName,&fileDesc);
