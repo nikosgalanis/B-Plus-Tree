@@ -119,8 +119,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	/* Get root number */
 	offset = sizeof(char) + sizeof(int);
 	int root_block_int;
-	memcpy(&root_block_int, first_block_info + offset, sizeof(int));
-  printf("good3\n");
+	memcpy(&root_block_int, &first_block_info + offset, sizeof(int));
 	/* Check if -1 */
 	if (root_block_int == -1) {
 		root_block_int = create_root(fileDesc, value1);
