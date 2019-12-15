@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "../include/util.h"
+#include "../include/insert_functions.h"
 
 #define AME_ERROR -1 //TODO: change this
 int AM_errno = AME_OK;
@@ -32,9 +34,9 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
   /* Get the total number of available blocks(1) */
   int blocks_num;
   BF_GetBlockCounter(fileDesc, &blocks_num);
-  /* Get access to the first block*/
+  /* Get access to the first block */
   BF_GetBlock(fileDesc, blocks_num - 1, first_block);
-	/*find out if we have a wrong input*/
+	/* Find out if we have a wrong input */
 	int ok_a = ((attrType1 == 'c') || (attrType1 == 'i') || (attrType1 == 'f'));
 	int ok_b = ((attrType2 == 'c') || (attrType2 == 'i') || (attrType2 == 'f'));
 	/*if there are no errors*/
@@ -46,17 +48,17 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 
 	  /* Also, store the total number of records in the file */
 	  int init_no_records = 0;
-		/*Initialize our offset*/
+		/* Initialize our offset */
 		offset = sizeof(char);
 	  memcpy(first_block_info + offset, &init_no_records, sizeof(int));
 
-	  /*Also, store the block that the root is in*/
+	  /* Also, store the block that the root is in */
 	  int root_block_no = -1;
 		offset = sizeof(char) + sizeof(int);
 	  memcpy(first_block_info + offset, &root_block_no, sizeof(int));
 
-	  /*Also, max pointers of index and max records of a block*/
-		/*if we have a string as a key, inrease its length by 1 to store the \0*/
+	  /* Also, max pointers of index and max records of a block */
+		/* If we have a string as a key, inrease its length by 1 to store the \0 */
 		int attrLength1new;
 		if (attrType1 == 'c') {
 			attrLength1new = attrLength1 + 1; // \O
@@ -71,13 +73,13 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 		offset = sizeof(char) + 3 * sizeof(int);
 	  memcpy(first_block_info + offset, &max_records_block, sizeof(int));
 
-	  /*Also the attr1 and it's length , and attr2 and it's length */
-		/*for a*/
+	  /* Also the attr1 and it's length , and attr2 and it's length */
+		/* a */
 		offset = sizeof(char) + 4 * sizeof(int);
 		memcpy(first_block_info + offset, &attrType1, sizeof(char));
 		offset = 2 * sizeof(char) + 4 * sizeof(int);
 		memcpy(first_block_info +  offset, &attrLength1new, sizeof(int));
-		/*for b*/
+		/* b */
 		offset = 2 * sizeof(char) + 5 * sizeof(int);
 		memcpy(first_block_info + offset , &attrType2, sizeof(char));
 		int attrLength2new;
@@ -108,17 +110,20 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	BF_Block *first_block;
 	int offset;
-	/*Get first block data*/
+	/* Get first block data */
 	BF_Block_Init(&first_block);
 	BF_GetBlock(fileDesc, 0, first_block);
+  printf("good1\n");
 	char *first_block_info = BF_Block_GetData(first_block);
-	/*Get root number*/
+  printf("good2\n");
+	/* Get root number */
 	offset = sizeof(char) + sizeof(int);
 	int root_block_int;
 	memcpy(&root_block_int, first_block_info + offset, sizeof(int));
-	/*Check if -1*/ 
+  printf("good3\n");
+	/* Check if -1 */
 	if (root_block_int == -1) {
-		root_block_int = Create_root(fileDesc, void *value1);
+		root_block_int = create_root(fileDesc, value1);
 	}
 	/////////////////////////////////
 	//TODO find tou panteli . Epistrefei int me to no_block pou 8elw
@@ -129,9 +134,9 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	////////////////////////////////
 
 	///////////////////////////////
-	TODO
+	//TODO
 	//An exei xwro apla insert mesa sto data block , me th sorted insert tou galani
-	//Else , 
+	//Else ,
 	//Αναδρομικά ή επαναληπτικά , βλέπουμε, μέχρι να βρεθεί χώρος για εγγραφες + ζεύγη
 	//1: Σπασιμο του του μπλοκ σε 2.
 	//2: Ισομερισμός εγγραφών(αν data block ) ή ζευγων(αν index block) στα 2 μπλοκ

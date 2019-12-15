@@ -1,17 +1,21 @@
 #pragma once
-/*includes*/
+
+/* Includes */
 #include "AM.h"
 #include "bf.h"
 #include "defn.h"
-/*defines*/
+
+/* Defines */
 #define BUFF_SIZE 64
 #define MAX_OPEN_FILES 20
 #define EMPTY_FILE -1
-/*enumerations*/
+
+/* Enumerations */
 typedef enum s{
   false, true
 } boolean;
-/*structs definition*/
+
+/* Structs definition */
 typedef struct {
   void* key;
   void* value;
@@ -29,12 +33,12 @@ typedef struct {
   File_info* open;
   int total;
 } Open_Files;
-/*global variables definition*/
+
+/* Global variables definition */
 Open_Files* Files;
-/*function headers definition*/
+
+/* Function headers definition */
 int find_empty_index();
 int find_index(int fileDesc);
 char* concat(const char *s1, const char *s2);
-char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new_block_num);
-int Create_root(int fileDesc, void* key);
-boolean data_sorted_insert(int block_num, int fileDesc, Record new_record);
+int compare(void *op1, int op, void *op2, char type);

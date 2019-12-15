@@ -61,15 +61,15 @@ int AM_OpenIndex(char *fileName) {
 	if (first_block_info[0] != 'H')
 		return AME_ERROR;
 	int offset = sizeof(char);
-	/*copy the total records*/
+	/* Copy the total records */
 	memcpy(&Files->open[index].total_records, first_block_info + offset, sizeof(int));
-	/*that is how much we must come through to go to the max_pointers counter*/
+	/* That is how much we must come through to go to the max_pointers counter */
 	offset = sizeof(char) + 2 * sizeof(int);
 	memcpy(&Files->open[index].max_pointers, first_block_info + offset, sizeof(int));
-	/*that is how much we must come through to go to the max_entries counter*/
+	/* That is how much we must come through to go to the max_entries counter */
 	offset += sizeof(int);
 	memcpy(&Files->open[index].max_entries, first_block_info + offset, sizeof(int));
-	/*unpin and destroy the block*/
+	/* Unpin and destroy the block */
 	BF_UnpinBlock(first_block);
 	BF_Block_Destroy(&first_block);
 	return AME_OK;

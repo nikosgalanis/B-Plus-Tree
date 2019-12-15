@@ -23,7 +23,7 @@ void insertEntries(int eNentry, int eAentry, int eSentry, int eDentry,
 	char errStr[40];
 
 	strcpy(errStr, "Error in AM_InsertEntry");
-
+	printf("OK1\n");
 	if (AM_InsertEntry(eNentry, (void *) ename, &recid) != AME_OK) {
 		sprintf(errStr, "Error in AM_InsertEntry called on %s \n", empName);
 		AM_PrintError(errStr);
@@ -80,7 +80,6 @@ int main() {
 	/********************************************************************************
 	 *  Δημιουργία ΒΔ που θα περιέχουν πληροφορίες για υπαλλήλους                   *
 	 ********************************************************************************/
-
 	if (AM_CreateIndex(empName, STRING, sizeof(empName) - 1, INTEGER,
 			sizeof(int)) != AME_OK) {
 		sprintf(errStr, "Error in AM_CreateIndex called on %s \n", empName);
@@ -113,7 +112,6 @@ int main() {
 	/********************************************************************************
 	 *  ¶νοιγμα των τεσσάρων ΑΚ (με σκοπό την εισαγωγή εγγραφών)                    *
 	 ********************************************************************************/
-
 	if ((eNentry = AM_OpenIndex(empName)) < 0) {
 		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empName);
 		AM_PrintError(errStr);
@@ -133,7 +131,6 @@ int main() {
 		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empDname);
 		AM_PrintError(errStr);
 	}
-
 	/********************************************************************************
 	 *  Εισαγωγή των δυάδων (τιμή1, τιμή2) στα ΑΚ. Υπάρχουν 100 συνολικά εισαγωγές    *
 	 *  σε κάθε αρχείο, οι οποίες διαχωρίζονται με παύλες για δική σας ευκολία         *
@@ -148,6 +145,7 @@ int main() {
 	strcpy(edname, "GALATA");
 	insertEntries(eNentry, eAentry, eSentry, eDentry, ename, eage, esal,
 			edname, ++recordid);
+	printf("OK3\n");
 
 	/* -----------------------------------------------------------------------------*/
 
