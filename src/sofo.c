@@ -93,7 +93,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 	else {
 		return AME_ERROR; //TODO: Return error
   }
-
+	//TODO change the n and n+1 for max
   /* We've changed the block data, so its dirty */
   BF_Block_SetDirty(first_block);
   /* Unpin the block from the memory */
@@ -103,4 +103,40 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 	/*close the file*/
 	BF_CloseFile(fileDesc);
   return AME_OK;
+}
+
+int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
+	BF_Block *first_block;
+	int offset;
+	/*Get first block data*/
+	BF_Block_Init(&first_block);
+	BF_GetBlock(fileDesc, 0, first_block);
+	char *first_block_info = BF_Block_GetData(first_block);
+	/*Get root number*/
+	offset = sizeof(char) + sizeof(int);
+	int root_block_int;
+	memcpy(&root_block_int, first_block_info + offset, sizeof(int));
+	/*Check if -1*/ 
+	if (root_block_int == -1) {
+		root_block_int = Create_root(fileDesc, void *value1);
+	}
+	/////////////////////////////////
+	//TODO find tou panteli . Epistrefei int me to no_block pou 8elw
+	////////////////////////////////
+
+	////////////////////////////////
+	//TODO check an exei xwro auto to data block
+	////////////////////////////////
+
+	///////////////////////////////
+	TODO
+	//An exei xwro apla insert mesa sto data block , me th sorted insert tou galani
+	//Else , 
+	//Αναδρομικά ή επαναληπτικά , βλέπουμε, μέχρι να βρεθεί χώρος για εγγραφες + ζεύγη
+	//1: Σπασιμο του του μπλοκ σε 2.
+	//2: Ισομερισμός εγγραφών(αν data block ) ή ζευγων(αν index block) στα 2 μπλοκ
+	//3: Εισαγωγή νέου ζευγους (κλειδι , δεικτης) στο κατάλληλο επίπεδο
+	//4: Αν σπάσει η ρίζα δημιουργείται νέα ρίζα και αντικατάσταση index και στο μηδενικό μπλοκ
+	////////////////////////////////
+	return AME_OK;
 }

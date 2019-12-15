@@ -105,6 +105,6 @@ int AM_DestroyIndex(char *fileName) {
 }
 
 
-int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
-  return AME_OK;
-}
+// int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
+//   return AME_OK;
+// }
