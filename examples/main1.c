@@ -23,7 +23,6 @@ void insertEntries(int eNentry, int eAentry, int eSentry, int eDentry,
 	char errStr[40];
 
 	strcpy(errStr, "Error in AM_InsertEntry");
-	printf("OK1\n");
 	if (AM_InsertEntry(eNentry, (void *) ename, &recid) != AME_OK) {
 		sprintf(errStr, "Error in AM_InsertEntry called on %s \n", empName);
 		AM_PrintError(errStr);

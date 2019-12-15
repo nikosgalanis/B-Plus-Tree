@@ -100,7 +100,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
   BF_Block_SetDirty(first_block);
   /* Unpin the block from the memory */
   BF_UnpinBlock(first_block);
-	/*Destroy the block pointer*/
+	/* Destroy the block pointer */
 	BF_Block_Destroy(&first_block);
 	/*close the file*/
 	BF_CloseFile(fileDesc);
