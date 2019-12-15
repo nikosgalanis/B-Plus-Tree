@@ -1,5 +1,5 @@
 #ignore the executable
-build/runner
+build/
 !build/.gitkeep
 
 #ignore all the files created
