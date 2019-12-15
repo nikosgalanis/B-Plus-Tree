@@ -144,7 +144,6 @@ int main() {
 	strcpy(edname, "GALATA");
 	insertEntries(eNentry, eAentry, eSentry, eDentry, ename, eage, esal,
 			edname, ++recordid);
-	printf("OK3\n");
 
 	/* -----------------------------------------------------------------------------*/
 

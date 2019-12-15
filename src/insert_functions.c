@@ -46,7 +46,7 @@ int create_root(int fileDesc,  void *key) {
   BF_AllocateBlock(fileDesc, first_data_block);
   BF_GetBlockCounter(fileDesc,  &blocks_num);
   int first_data_block_index = blocks_num - 1;
-  BF_AllocateBlock(fileDesc, first_data_block);
+  BF_AllocateBlock(fileDesc, second_data_block);
   BF_GetBlockCounter(fileDesc,  &blocks_num);
   int second_data_block_index = blocks_num - 1;
 

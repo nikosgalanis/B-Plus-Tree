@@ -58,7 +58,7 @@ int AM_OpenIndex(char *fileName) {
 	/* Get access to its data */
 	char* first_block_info = BF_Block_GetData(first_block);
 	/* Check if it is a Heap file, and return sucess or failure */
-	if (first_block_info[0] != 'H')
+	if (first_block_info[0] != 'B')
 		return AME_ERROR;
 	int offset = sizeof(char);
 	/* Copy the total records */
