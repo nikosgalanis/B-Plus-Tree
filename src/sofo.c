@@ -120,10 +120,9 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	memcpy(&root_block_int, first_block_info + offset, sizeof(int));
 	/* Check if -1 */
 	if (root_block_int == -1) {
-		printf("goes to create\n");
 		root_block_int = create_root(fileDesc, value1);
-		printf("index of root %d\n",root_block_int);
 	}
+  find_data_block(fileDesc, root_block_int, value1);
 	/////////////////////////////////
 	//TODO find tou panteli . Epistrefei int me to no_block pou 8elw
 	////////////////////////////////

@@ -16,5 +16,5 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record,
 int create_root(int fileDesc, void* key);
 
 boolean data_sorted_insert(int block_num, int fileDesc, Record new_record);
-/* Returns the index of the data block to potentially insert our record */
-int find_data_block_to_insert(int fileDesc, int root_num, void *key);
+
+int find_data_block(int fileDesc, int root_num, void *key);

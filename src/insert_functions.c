@@ -193,21 +193,71 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   return (char*)record_to_return -> key;
 }
 
-int find_data_block_to_insert(int fileDesc, int root_num, void *key) {
+int find_data_block(int fileDesc, int root_num, void *key) {
   /* Initialize a pointer to a block */
   BF_Block* first_block;
   BF_Block_Init(&first_block);
-  /* Get acces to the data of the very first block */
+  /* Get access to the data of the very first block */
   BF_GetBlock(fileDesc, 0, first_block);
   /* Get access to its data */
   char* first_block_info = BF_Block_GetData(first_block);
   /* Get the attribute type of key */
   char key_type;
   memcpy(&key_type, first_block_info + sizeof(char) + 4 * sizeof(int), sizeof(char));
-  printf("%c\n",key_type);
+  /* Get size of key */
+  size_t key_size;
+  switch (key_type) {
+    case INTEGER:
+      key_size = sizeof(int);
+      break;
+    case FLOAT:
+      key_size = sizeof(float);
+      break;
+    case STRING:
+      key_size = sizeof((strlen((char *)key) - 1));
+      break;
+  }
   /* Unpin and destroy block */
   BF_UnpinBlock(first_block);
   BF_Block_Destroy(&first_block);
+  /* Initialize a new block */
+  BF_Block* block;
+  BF_Block_Init(&block);
+  /* Starting from the root */
+  int block_num = root_num;
+  char block_idf;
+  int no_indxs;
+  void *block_key;
+  do {
+    BF_GetBlock(fileDesc, block_num, block);
+    /* Get block data */
+    char* block_info = BF_Block_GetData(block);
+    /* Get block identifier */
+    int block_offset = 0;
+    memcpy(&block_idf, block_info + block_offset, sizeof(char));
+    block_offset += sizeof(char);
+    /* Check if we are not in Index block */
+    if (block_idf == 'I') {
+      return block_num;
+    }
+    /* Get number of indexes stored into the block */
+    memcpy(&no_indxs, block_info + block_offset, sizeof(int));
+    block_offset += sizeof(int);
+    for (int i = 0; i < no_indxs; ++i) {
+      /* surpass index to block */
+      block_offset += sizeof(int);
+      memcpy(&block_key, block_info + block_offset, key_size);
+      /* Compare key with block key */
+      int result = compare(key, LESS_THAN_OR_EQUAL, block_key, key_type);
+      /* if given key <= block key go to corresponding block */
+      if (result) {
+        /* Get corresponding index */
+        memcpy(&block_num, block_info + block_offset - key_size, sizeof(int));
+        /* Unpin index block */
+        BF_UnpinBlock(block);
+      }
+    }
+  } while (block_idf == 'D');
 
-  return 1;
+  return -1;
 }

@@ -4,6 +4,7 @@
 
 #include "../include/util.h"
 
+
 int find_empty_index() {
   for (int i = 0; i < MAX_OPEN_FILES; ++i) {
     if (Files->open[i].file_index == EMPTY_FILE)
