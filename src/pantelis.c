@@ -15,12 +15,3 @@ void *AM_FindNextEntry(int scanDesc) {
 int AM_CloseIndexScan(int scanDesc) {
   return AME_OK;
 }
-
-
-void AM_PrintError(char *errString) {
-
-}
-
-void AM_Close() {
-
-}

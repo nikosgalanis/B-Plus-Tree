@@ -5,6 +5,27 @@
 #include "bf.h"
 #include "defn.h"
 
+/* Macro instructions for error catching */
+
+
+#define CALL_BF(call)           \
+{                               \
+  BF_ErrorCode code = call;     \
+  if (code != BF_OK) {          \
+    CALL_AM(BF_ERR);            \
+    BF_PrintError(code);        \
+  }                             \
+}
+
+#define CALL_AM(call)                         \
+{                                             \
+  AM_ErrorCode code = call;                   \
+  if (code != AM_OK) {                        \
+    AM_PrintError("An error has occured");    \
+    AM_errno = code;                          \
+  }                                           \
+}
+
 /* Defines */
 #define BUFF_SIZE 64
 #define MAX_OPEN_FILES 20
@@ -14,6 +35,15 @@
 typedef enum s{
   false, true
 } boolean;
+
+typedef enum {
+  AM_OK,
+  BF_ERR,
+  MEM_ERR,
+  MAX_FILES_ERR,
+  WRONG_FILE_ERR,
+  TYPE_ERR
+} AM_ErrorCode;
 
 /* Structs definition */
 typedef struct {

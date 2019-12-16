@@ -6,17 +6,7 @@
 #include "../include/insert_functions.h"
 
 #define AME_ERROR -1 //TODO: change this
-int AM_errno = AME_OK;
-
-#define CALL_BF(call)       \
-{                           \
-  BF_ErrorCode code = call; \
-  if (code != BF_OK) {         \
-    BF_PrintError(code);    \
-    return AME_ERROR;        \
-  }                         \
-}
-
+int AM_errno;
 
 int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 									 char attrType2,int attrLength2) {
@@ -66,8 +56,9 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 		else {
 			attrLength1new = attrLength1;
 		}
-	  int max_index_pointers = ((BF_BLOCK_SIZE - sizeof(int)) / (attrLength1new + sizeof(int))) + 1;
-	  int max_records_block = BF_BLOCK_SIZE / sizeof(Record);
+    /* the following math occur from the metadata that we must store */
+	  int max_index_pointers = ((BF_BLOCK_SIZE - 2 * sizeof(int) - sizeof(char)) / (attrLength1new + sizeof(int))) + 1;
+	  int max_records_block = (BF_BLOCK_SIZE - sizeof(int) - sizeof(char)) / sizeof(Record);
 		offset = sizeof(char) + 2 * sizeof(int);
 	  memcpy(first_block_info + offset, &max_index_pointers, sizeof(int));
 		offset = sizeof(char) + 3 * sizeof(int);

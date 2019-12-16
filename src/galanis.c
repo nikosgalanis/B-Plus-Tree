@@ -7,15 +7,6 @@ extern int AM_errno;
 #define AME_ERROR -1 //TODO: change this
 #define CHAR_SIZE 40
 
-#define CALL_BF(call)       \
-{                           \
-  BF_ErrorCode code = call; \
-  if (code != BF_OK) {         \
-    BF_PrintError(code);    \
-    return AME_ERROR;        \
-  }                         \
-}
-
 
 void AM_Init() {
 	BF_Init(MRU);
@@ -57,7 +48,7 @@ int AM_OpenIndex(char *fileName) {
 	BF_GetBlock(fileDesc, 0, first_block);
 	/* Get access to its data */
 	char* first_block_info = BF_Block_GetData(first_block);
-	/* Check if it is a Heap file, and return sucess or failure */
+	/* Check if it is a AM file, and return sucess or failure */
 	if (first_block_info[0] != 'B')
 		return AME_ERROR;
 	int offset = sizeof(char);
@@ -104,7 +95,32 @@ int AM_DestroyIndex(char *fileName) {
   return AME_OK;
 }
 
+void AM_PrintError(char *errString) {
+  /* print the wanted string */
+  printf("%s\n",errString);
+  /* print an error message according to our global variable */
+  switch (AM_errno) {
+    case BF_ERR:
+      printf("The error occured in the Block File level\n");
+      return;
+    case MEM_ERR:
+      printf("The error occured during allocation of memory in stack\n");
+      return;
+    case MAX_FILES_ERR:
+      printf("Tried to open too many files. Last requested file will not be oppened\n");
+      return;
+    case WRONG_FILE_ERR:
+      printf("Tried to open a non-AM file. This file will not be oppened\n");
+      return;
+    case TYPE_ERR:
+      printf("Tried to initialize a file with unknown type of data.\n");
+  }
+}
 
-// int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
-//   return AME_OK;
-// }
+void AM_Close() {
+  /* close the BF level */
+  BF_Close();
+  /* free the struct for the open files */
+  free(Files->open);
+  free(Files);
+}
