@@ -117,6 +117,8 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
   /* Get the max possible records in a data block */
   int max_records;
   memcpy(&max_records, first_block_info + offset, sizeof(int));
+  BF_UnpinBlock(first_block);
+  BF_Block_Destroy(&first_block);
   BF_Block* block;
   BF_Block_Init(&block);
   BF_GetBlock(fileDesc, block_num - 1, block);
