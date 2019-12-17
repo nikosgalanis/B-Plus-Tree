@@ -65,15 +65,15 @@ int create_root(int fileDesc,  void *key) {
      next block number */
   /* for the first block */
   int prev = -1; int next = second_data_block_index;
-  offset += sizeof(int);
+  offset = sizeof(char) + sizeof(int);
   memcpy(first_data_block_info + offset, &prev, sizeof(int));
-  offset += sizeof(int);
+  offset = sizeof(char) + 2 * sizeof(int);
   memcpy(first_data_block_info + offset, &next, sizeof(int));
   /* for the second block */
   prev = first_data_block_index; next = -1;
-  offset += sizeof(int);
+  offset = sizeof(char) + sizeof(int);
   memcpy(second_data_block_info + offset, &prev, sizeof(int));
-  offset += sizeof(int);
+  offset = sizeof(char) + 2 * sizeof(int);
   memcpy(second_data_block_info + offset, &next, sizeof(int));
 
   /* Now place the 2 data block indexes in the root block,
