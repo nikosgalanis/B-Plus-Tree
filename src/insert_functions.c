@@ -61,6 +61,20 @@ int create_root(int fileDesc,  void *key) {
   offset = sizeof(char);
   memcpy(first_data_block_info + offset, &no_records, sizeof(int));
   memcpy(second_data_block_info + offset, &no_records, sizeof(int));
+  /* we want to keep all the data blocks linked, so store the previous and the
+     next block number */
+  /* for the first block */
+  int prev = -1; int next = second_data_block_index;
+  offset += sizeof(int);
+  memcpy(first_data_block + offset, &prev, sizeof(int));
+  offset += sizeof(int);
+  memcpy(first_data_block + offset, &next, sizeof(int));
+  /* for the second block */
+  int prev = first_data_block_index; int next = -1;
+  offset += sizeof(int);
+  memcpy(second_data_block + offset, &prev, sizeof(int));
+  offset += sizeof(int);
+  memcpy(second_data_block + offset, &next, sizeof(int));
 
   /* Now place the 2 data block indexes in the root block,
     and the key between them */
@@ -109,7 +123,8 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
   char* data = BF_Block_GetData(block);
   if (data[0] != 'D') {
     printf("Not a data block\n");
-    //TODO Umpin and Destroy
+    BF_UnpinBlock(block);
+    BF_Block_Destroy(&block);
     return false;
   }
   /* Initialize the offset to find where to store the new record */
@@ -137,10 +152,12 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
    }
    /* If we haven't yet inserted the record, now its time(at the end of the block) */
    memcpy(data + offset, &new_record, sizeof(new_record));
-   //TODO: Unpin and destroy
+   BF_Block_SetDirty(block);
+   BF_UnpinBlock(block);
+   BF_Block_Destroy(&block);
    return true;
 }
-
+/* !!!!SOS!!!! If we ever get shit data into a data block, the error will be in here */
 char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new_block_num) {
   /* Initialize a pointer to the block */
   BF_Block* block;
@@ -167,9 +184,24 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   char type = 'D'; int init_records = total_records - split_pos;
   memcpy(new_block_data, &type, sizeof(char));
   memcpy(new_block_data + sizeof(char), &init_records, sizeof(int));
-  /* Copy the data from the full block to the empty, so we have two half-full
-    data blocks */
+  /* Update the neighbor data block pointers as following */
+  int prev; int next;
+  BF_GetBlockCounter(fileDesc, &next); next--;
+  /* the new next of the first block, is the one that we just allocated */
+  offset += sizeof(int);
+  memcpy(block_info + offset, &next, sizeof(int));
+  offset += sizeof(int);
+  /* the previous block of the new one, is the one that we got as an argument */
+  prev = block_num;
+  next = -1;
   int new_block_offset = sizeof(char) + sizeof(int);
+  memcpy(new_block_data + new_block_offset, &prev, sizeof(int));
+  new_block_offset += sizeof(int);
+  memcpy(new_block_data + new_block_offset, &next, sizeof(int));
+  new_block_offset += sizeof(int);
+
+  /* Copy the data from the full block to the empty, so we have two half-full
+  data blocks */
   memcpy(new_block_data + new_block_offset, block_info + offset, init_records * sizeof(new_record));
   /* Fill the rest of the first block with -1 values */
   memset(block_info + offset, -1, init_records * sizeof(new_record));
@@ -190,7 +222,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   BF_Block_Destroy(&block);
   BF_Block_Destroy(&new_block);
   /* Return the key of the record we want as an index */
-  return (char*)record_to_return -> key;
+  return (char*)record_to_return->key;
 }
 
 int find_data_block(int fileDesc, int root_num, void *key) {

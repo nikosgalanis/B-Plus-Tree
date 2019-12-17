@@ -27,8 +27,13 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
   /* Get access to the first block */
   BF_GetBlock(fileDesc, blocks_num - 1, first_block);
 	/* Find out if we have a wrong input */
-	int ok_a = ((attrType1 == 'c') || (attrType1 == 'i') || (attrType1 == 'f'));
-	int ok_b = ((attrType2 == 'c') || (attrType2 == 'i') || (attrType2 == 'f'));
+	int ok_a = ((attrType1 == 'c' && attrLength1 >= 1 && attrLength1 <= 255) ||
+							(attrType1 == 'i' && attrLength1 == 4) ||
+							(attrType1 == 'f' && attrLength1 == 4));
+
+	int ok_b = ((attrType2 == 'c' && attrLength2 >= 1 && attrLength2 <= 255) ||
+							(attrType2 == 'i' && attrLength2 == 4) ||
+							(attrType2 == 'f' && attrLength2 == 4));
 	/*if there are no errors*/
 	if ((ok_a == 1) && (ok_b == 1)) {
 	  /* Set its data to be the character 'B', so we can recognize the B+ files */
@@ -58,7 +63,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 		}
     /* the following math occur from the metadata that we must store */
 	  int max_index_pointers = ((BF_BLOCK_SIZE - 2 * sizeof(int) - sizeof(char)) / (attrLength1new + sizeof(int))) + 1;
-	  int max_records_block = (BF_BLOCK_SIZE - sizeof(int) - sizeof(char)) / sizeof(Record);
+	  int max_records_block = (BF_BLOCK_SIZE - 3 * sizeof(int) - sizeof(char)) / sizeof(Record);
 		offset = sizeof(char) + 2 * sizeof(int);
 	  memcpy(first_block_info + offset, &max_index_pointers, sizeof(int));
 		offset = sizeof(char) + 3 * sizeof(int);
