@@ -66,15 +66,15 @@ int create_root(int fileDesc,  void *key) {
   /* for the first block */
   int prev = -1; int next = second_data_block_index;
   offset += sizeof(int);
-  memcpy(first_data_block + offset, &prev, sizeof(int));
+  memcpy(first_data_block_info + offset, &prev, sizeof(int));
   offset += sizeof(int);
-  memcpy(first_data_block + offset, &next, sizeof(int));
+  memcpy(first_data_block_info + offset, &next, sizeof(int));
   /* for the second block */
-  int prev = first_data_block_index; int next = -1;
+  prev = first_data_block_index; next = -1;
   offset += sizeof(int);
-  memcpy(second_data_block + offset, &prev, sizeof(int));
+  memcpy(second_data_block_info + offset, &prev, sizeof(int));
   offset += sizeof(int);
-  memcpy(second_data_block + offset, &next, sizeof(int));
+  memcpy(second_data_block_info + offset, &next, sizeof(int));
 
   /* Now place the 2 data block indexes in the root block,
     and the key between them */
@@ -169,11 +169,13 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   /* Get the total records that the block contains*/
   int total_records;
   memcpy(&total_records, block_info + sizeof(char), sizeof(int));
-  int offset = sizeof(char) + sizeof(int);
   /* Get the position that we want to split. If the block contains odd number of
     records, we want one more on the right */
   int split_pos = total_records / 2 + (total_records % 2 == 1);
-  offset += split_pos * sizeof(new_record);
+  int offset = sizeof(char);
+  /* Update the total_records. There will be those that the block will have after
+     the split */
+  memcpy(block_info + offset, &split_pos, sizeof(int));
   /* Allocate and initialize a new data block */
   BF_Block* new_block;
   BF_Block_Init(&new_block);
@@ -188,9 +190,9 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   int prev; int next;
   BF_GetBlockCounter(fileDesc, &next); next--;
   /* the new next of the first block, is the one that we just allocated */
-  offset += sizeof(int);
+  offset += 2 * sizeof(int);
   memcpy(block_info + offset, &next, sizeof(int));
-  offset += sizeof(int);
+  offset += sizeof(int) + split_pos * sizeof(new_record);
   /* the previous block of the new one, is the one that we got as an argument */
   prev = block_num;
   next = -1;
@@ -203,17 +205,18 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   /* Copy the data from the full block to the empty, so we have two half-full
   data blocks */
   memcpy(new_block_data + new_block_offset, block_info + offset, init_records * sizeof(new_record));
-  /* Fill the rest of the first block with -1 values */
-  memset(block_info + offset, -1, init_records * sizeof(new_record));
   /* Find and store the record that we want as a pointer for the index blocks
     level */
-  char* record_data_to_return;
+  char* record_data_to_return = malloc(sizeof(new_record));
   offset -= sizeof(new_record);
   memcpy(record_data_to_return, block_info + offset, sizeof(new_record));
   Record* record_to_return = (Record*) record_data_to_return;
   /* Call BF_GetBlockCounter to find the number of the newly allocated block */
   BF_GetBlockCounter(fileDesc, new_block_num);
   (*new_block_num)--;
+  /* Fill the rest of the first block with -1 values */
+  offset += sizeof(new_record);
+  memset(block_info + offset, -1, init_records * sizeof(new_record));
   /* Set the previously edited blocks dirty, and unpin the, from the memory */
   BF_Block_SetDirty(block);
   BF_Block_SetDirty(new_block);
@@ -223,6 +226,60 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   BF_Block_Destroy(&new_block);
   /* Return the key of the record we want as an index */
   return (char*)record_to_return->key;
+}
+
+char* split_index_block(int fileDesc, int block_num, char* new_entry, int* new_block_num) {
+  /* Initialize a pointer to the block */
+  BF_Block* block;
+  BF_Block_Init(&block);
+  /* And get access to it */
+  BF_GetBlock(fileDesc, block_num, block);
+  /* Get access to its data */
+  char* block_info = BF_Block_GetData(block);
+  /* Get the total records that the block contains*/
+  int total_keys;
+  memcpy(&total_keys, block_info + sizeof(char), sizeof(int));
+  int offset = sizeof(char) + sizeof(int);
+  /* Get the position that we want to split. If the block contains odd number of
+    records, we want one more on the right */
+  int split_pos = total_keys / 2 + (total_keys % 2 == 1);
+  /* Allocate and initialize a new index block */
+  BF_Block* new_block;
+  BF_Block_Init(&new_block);
+  BF_AllocateBlock(fileDesc, new_block);
+  char* new_block_data = BF_Block_GetData(new_block);
+  char type = 'I'; int init_records = total_keys - split_pos; //TODO :maybe fix it
+  memcpy(new_block_data, &type, sizeof(char));
+  memcpy(new_block_data + sizeof(char), &init_records, sizeof(int));
+  offset += split_pos * sizeof(new_entry);
+  int new_block_offset = sizeof(char) + sizeof(int);
+  int init_keys = total_keys - split_pos;
+  /* Copy the data from the full block to the empty, so we have two half-full
+  index blocks */
+  memcpy(new_block_data + new_block_offset, block_info + offset, init_keys * sizeof(new_entry));
+  /* We want to return a string that contains [poiter | key | pointer], where
+     the pointers are pointers to the splited blocks */
+  char* to_return = malloc(sizeof(new_entry) + sizeof(int));
+  int left = block_num; int right; BF_GetBlockCounter(fileDesc, &right);
+  memcpy(to_return, &left, sizeof(int));
+  int parent_offset = sizeof(int);
+  /* we want to take only the key to pass it to the parent */
+  offset -= (sizeof(new_entry) - sizeof(int));
+  memcpy(to_return + parent_offset, block_info + offset, sizeof(new_entry) - sizeof(int));
+  parent_offset += sizeof(new_entry) - sizeof(int);
+  memcpy(to_return + parent_offset, &right, sizeof(int));
+  offset += (sizeof(new_entry) - sizeof(int));
+  /* Fill the rest of the first block with -1 values */
+  memset(block_info + offset, -1, init_keys * sizeof(new_entry));
+  /* Set dirty, unpin and destroy the blocks */
+  BF_Block_SetDirty(block);
+  BF_Block_SetDirty(new_block);
+  BF_UnpinBlock(block);
+  BF_UnpinBlock(new_block);
+  BF_Block_Destroy(&block);
+  BF_Block_Destroy(&new_block);
+  /* Return the string we want to append to the parent */
+  return to_return;
 }
 
 int find_data_block(int fileDesc, int root_num, void *key) {
