@@ -89,7 +89,7 @@ int create_root(int fileDesc,  void *key) {
   offset = sizeof(char) + sizeof(int);
   memcpy(first_block_info + offset, &root_block_index, sizeof(int));
 
-  /*Set dirty, Unpin, Destroy*/
+  /* Set dirty, Unpin, Destroy*/
   BF_Block_SetDirty(first_block);
   BF_Block_SetDirty(root_block);
   BF_Block_SetDirty(first_data_block);
@@ -128,7 +128,7 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
     return false;
   }
   /* Initialize the offset to find where to store the new record */
-  offset = sizeof(char) + sizeof(int);
+  offset = sizeof(char) + 3 * sizeof(int);
   int total_records;
   /*If the block is full, return an error*/
   if (total_records == max_records)
@@ -158,7 +158,7 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
    return true;
 }
 /* !!!!SOS!!!! If we ever get shit data into a data block, the error will be in here */
-char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new_block_num) {
+char* split_data_block(int fileDesc, int block_num, Record* new_record, char key_type) {
   /* Initialize a pointer to the block */
   BF_Block* block;
   BF_Block_Init(&block);
@@ -171,7 +171,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   memcpy(&total_records, block_info + sizeof(char), sizeof(int));
   /* Get the position that we want to split. If the block contains odd number of
     records, we want one more on the right */
-  int split_pos = total_records / 2 + (total_records % 2 == 1);
+  int split_pos = total_records / 2;
   int offset = sizeof(char);
   /* Update the total_records. There will be those that the block will have after
      the split */
@@ -201,21 +201,27 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   new_block_offset += sizeof(int);
   memcpy(new_block_data + new_block_offset, &next, sizeof(int));
   new_block_offset += sizeof(int);
-
+  /* If the key we want to insert is grater than the key of the middle record of
+     the block, then we want to keep +1 records in the left block, so use the
+     generic compare function that we have */
+  Record* middle;
+  memcpy(middle, block_info + offset, sizeof(Record));
+  int right = compare(new_record->key, GREATER_THAN, middle->key, key_type);
+  split_pos += right;
   /* Copy the data from the full block to the empty, so we have two half-full
   data blocks */
   memcpy(new_block_data + new_block_offset, block_info + offset, init_records * sizeof(new_record));
-  /* Find and store the record that we want as a pointer for the index blocks
-    level */
-  char* record_data_to_return = malloc(sizeof(new_record));
-  offset -= sizeof(new_record);
-  memcpy(record_data_to_return, block_info + offset, sizeof(new_record));
-  Record* record_to_return = (Record*) record_data_to_return;
+  /* We want to return the key of the first record of the left block, and the
+     two pointers surrounding it */
+  char* to_return = malloc(sizeof(new_record) + 2 * sizeof(int));
+  memcpy(to_return, &block_num, sizeof(int));
+  memcpy(to_return + sizeof(int), new_block_data + offset, sizeof(new_record));
+  int new_block_num;
+  BF_GetBlockCounter(fileDesc, &new_block_num);
+  new_block_num--;
+  memcpy(to_return + sizeof(int) + sizeof(new_record), new_block_num, sizeof(int));
   /* Call BF_GetBlockCounter to find the number of the newly allocated block */
-  BF_GetBlockCounter(fileDesc, new_block_num);
-  (*new_block_num)--;
   /* Fill the rest of the first block with -1 values */
-  offset += sizeof(new_record);
   memset(block_info + offset, -1, init_records * sizeof(new_record));
   /* Set the previously edited blocks dirty, and unpin the, from the memory */
   BF_Block_SetDirty(block);
@@ -225,7 +231,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, int* new
   BF_Block_Destroy(&block);
   BF_Block_Destroy(&new_block);
   /* Return the key of the record we want as an index */
-  return (char*)record_to_return->key;
+  return to_return;
 }
 
 char* split_index_block(int fileDesc, int block_num, char* new_entry, int* new_block_num) {
