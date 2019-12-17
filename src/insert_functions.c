@@ -128,7 +128,7 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
     return false;
   }
   /* Initialize the offset to find where to store the new record */
-  offset = sizeof(char) + sizeof(int);
+  offset = sizeof(char) + 3 * sizeof(int);
   int total_records;
   /*If the block is full, return an error*/
   if (total_records == max_records)
