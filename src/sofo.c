@@ -118,13 +118,15 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	if (root_block_int == -1) {
 		root_block_int = create_root(fileDesc, value1);
 	}
-  find_data_block(fileDesc, root_block_int, value1);
+  //int target_block_index = find_data_block(fileDesc, root_block_int, value1);
 	/////////////////////////////////
 	//TODO find tou panteli . Epistrefei int me to no_block pou 8elw
 	////////////////////////////////
-
+	//to int to target block
 	////////////////////////////////
 	//TODO check an exei xwro auto to data block
+	boolean record_fits_data(fileDesc, target_block_index);
+
 	////////////////////////////////
 
 	///////////////////////////////
@@ -136,6 +138,13 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	//2: Ισομερισμός εγγραφών(αν data block ) ή ζευγων(αν index block) στα 2 μπλοκ
 	//3: Εισαγωγή νέου ζευγους (κλειδι , δεικτης) στο κατάλληλο επίπεδο
 	//4: Αν σπάσει η ρίζα δημιουργείται νέα ρίζα και αντικατάσταση index και στο μηδενικό μπλοκ
+	/*	if (to stack exei to root pointer) {
+				create new root();
+				insert se auto to apotelesma tou teleutaiou split;
+				+ antikatasash sto  1o block
+			} */
+	//TODO Na auksisoyme ta ints twn data blocks gia ta records , twn indexes gia ta index blocks , kai sto first block gia ta total records
 	////////////////////////////////
 	return AME_OK;
 }
+//check if record fits in block

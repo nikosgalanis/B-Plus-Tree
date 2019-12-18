@@ -15,4 +15,6 @@ int create_root(int fileDesc, void* key);
 
 boolean data_sorted_insert(int block_num, int fileDesc, Record new_record);
 
+boolean record_fits_data(int fileDesc, int target_block_index);
+
 int find_data_block(int fileDesc, int root_num, void *key);

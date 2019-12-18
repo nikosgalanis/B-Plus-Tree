@@ -290,6 +290,38 @@ char* split_index_block(int fileDesc, int block_num, char* new_entry, int* new_b
   return to_return;
 }
 
+boolean record_fits_data(int fileDesc, int target_block_index) {
+	boolean fits;
+	BF_Block *first_block, *target_block;
+	//target_block that want to check if record fits
+	//and first block for max records
+	BF_Block_Init(&first_block);
+	BF_Block_Init(&target_block);
+
+	BF_GetBlock(fileDesc, 0, first_block);
+	char *first_block_info = BF_Block_GetData(first_block);
+	BF_GetBlock(fileDesc,target_lock_index,target_block);
+	char* target_block_info = BF_Block_GetData(target_block);
+	offset = sizeof(char);
+	int target_block_records;
+	memcpy(&target_block_records, target_block_info + offset. sizeof(int));
+
+	int max_block_records;
+	memcpy(&max_block_records,first_block_info + offset, sizeof(int));
+
+	if (max_block_records > target_block_records) {
+		fits = 1;
+	}
+	else {
+		fits = 0;
+	}
+	BF_UnpinBlock(target_block);
+	BF_UnpinBlock(first_block);
+	BF_Block_Destroy(&first_block);
+	BF_Block_Destroy(&target_block);
+	return fits;
+}
+
 int find_data_block(int fileDesc, int root_num, void *key) {
   /* Initialize a pointer to a block */
   BF_Block* first_block;
