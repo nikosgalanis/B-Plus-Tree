@@ -4,9 +4,8 @@
 #include "AM.h"
 #include "bf.h"
 #include "defn.h"
-
+#include "stack.h"
 /* Macro instructions for error catching */
-
 
 #define CALL_BF(call)           \
 {                               \
@@ -32,7 +31,7 @@
 #define EMPTY_FILE -1
 
 /* Enumerations */
-typedef enum s{
+typedef enum s {
   false, true
 } boolean;
 

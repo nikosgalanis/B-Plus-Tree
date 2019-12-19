@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/util.h"
 #include "../include/insert_functions.h"
 
 int create_root(int fileDesc,  void *key) {
@@ -323,6 +322,8 @@ boolean record_fits_data(int fileDesc, int target_block_index) {
 }
 
 Stack* find_data_block(int fileDesc, int root_num, void *key) {
+  /* Initialize a stack to keep our path*/
+  Stack* path = InitializeStack();
   /* Initialize a pointer to a block */
   BF_Block* first_block;
   BF_Block_Init(&first_block);
@@ -359,6 +360,8 @@ Stack* find_data_block(int fileDesc, int root_num, void *key) {
   void *block_key;
   do {
     BF_GetBlock(fileDesc, block_num, block);
+    /* Push the block number to the stack */
+    Push(path, block_num);
     /* Get block data */
     char* block_info = BF_Block_GetData(block);
     /* Get block identifier */
@@ -366,8 +369,8 @@ Stack* find_data_block(int fileDesc, int root_num, void *key) {
     memcpy(&block_idf, block_info + block_offset, sizeof(char));
     block_offset += sizeof(char);
     /* Check if we are not in Index block */
-    if (block_idf == 'I') {
-      return block_num;
+    if (block_idf == 'D') {
+      return path;
     }
     /* Get number of indexes stored into the block */
     memcpy(&no_indxs, block_info + block_offset, sizeof(int));
@@ -388,5 +391,5 @@ Stack* find_data_block(int fileDesc, int root_num, void *key) {
     }
   } while (block_idf == 'D');
 
-  return -1;
+  return path;
 }
