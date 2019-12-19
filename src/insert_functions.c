@@ -306,6 +306,7 @@ boolean record_fits_data(int fileDesc, int target_block_index) {
 	memcpy(&target_block_records, target_block_info + offset, sizeof(int));
 
 	int max_block_records;
+  offset = sizeof(char) + 3 * sizeof(int);
 	memcpy(&max_block_records,first_block_info + offset, sizeof(int));
 
 	if (max_block_records > target_block_records) {
