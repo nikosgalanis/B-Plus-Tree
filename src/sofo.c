@@ -104,7 +104,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 
 int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 
-	Record* new_record = create_record(int fileDesc, void *value1, void *value2);
+	Record* new_record = create_record(fileDesc, value1, value2);
 	BF_Block *first_block;
 	int offset;
 	/* Get first block data */
@@ -122,50 +122,50 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 
 	/////////////////////////////////////////////////////////////////////
 	 Stack* path;
-   path = find_data_block(fileDesc, root_block_int, value1);
-	 char* append;
-	 memcpy(append, new_record, sizeof(Record));
-	 int target_block_index;
-	//Epistrefei stack
-	//estw oti
-	/////////////////////////////////
-	//TODO Galanis Create record
-	////////////////////////////////
-	////////////////////////////////
-	//TODO check an exei xwro auto to data block
-	//boolean record_fits_data(fileDesc, target_block_index);
-	//TODO create empty root function gia otan kanw split thn riza
-	////////////////////////////////
-	while (! Empty(path)) {
-		//TODO check stack.c
-		target_block_index = pop(&path);
-		if(/*is datablock*/) {
-			if (record_fits_data(fileDesc,target_block_index) == true) {
-				//TODO Initialize record
-				//TODO data_sorted_insert na pairnei char*
-				//TODO index_soertd_insert na pairnei char*
-				data_sorted_insert(target_block_index,fileDesc, Record new_record);
-				break;
-			}
-			else {
-				append = split_data_block(/**/);
-			}
-		}
-		else {
-			if (key_fits_index(/**/)) {
-				index_sorted_insert(/**/);
-				break;
-			}
-			else {
-				append = split_index_block(/**/);
-			}
-		}
-	}
-
-	if (Empty(path)) {
-		create_empty_root(/**/);
-
-	}
+  //  path = find_data_block(fileDesc, root_block_int, value1);
+	//  char* append;
+	//  memcpy(append, new_record, sizeof(Record));
+	//  int target_block_index;
+	// //Epistrefei stack
+	// //estw oti
+	// /////////////////////////////////
+	// //TODO Galanis Create record
+	// ////////////////////////////////
+	// ////////////////////////////////
+	// //TODO check an exei xwro auto to data block
+	// //boolean record_fits_data(fileDesc, target_block_index);
+	// //TODO create empty root function gia otan kanw split thn riza
+	// ////////////////////////////////
+	// while (! Empty(path)) {
+	// 	//TODO check stack.c
+	// 	target_block_index = pop(&path);
+	// 	if(/*is datablock*/) {
+	// 		if (record_fits_data(fileDesc,target_block_index) == true) {
+	// 			//TODO Initialize record
+	// 			//TODO data_sorted_insert na pairnei char*
+	// 			//TODO index_soertd_insert na pairnei char*
+	// 			data_sorted_insert(target_block_index,fileDesc, Record new_record);
+	// 			break;
+	// 		}
+	// 		else {
+	// 			append = split_data_block(/**/);
+	// 		}
+	// 	}
+	// 	else {
+	// 		if (key_fits_index(/**/)) {
+	// 			index_sorted_insert(/**/);
+	// 			break;
+	// 		}
+	// 		else {
+	// 			append = split_index_block(/**/);
+	// 		}
+	// 	}
+	// }
+	//
+	// if (Empty(path)) {
+	// 	create_empty_root(/**/);
+	//
+	// }
 	///////////////////////////////
 	//TODO sofo
 
@@ -189,52 +189,3 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	return AME_OK;
 }
 //check if record fits in block
-
-
-
-//TODO EMPTY ROOT HANGE NAME
-//Create empty - not-empty root change the name later
-int create_empty_root(int fileDesc, char* append) {
-  BF_Block *first_block, *root_block;
-  int offset;
-  /* Get data of 1st block */
-  BF_Block_Init(&first_block);
-  BF_GetBlock(fileDesc, 0, first_block);
-  char *first_block_info = BF_Block_GetData(first_block);
-
-  /* key to a new variable */
-  /* Create root block */
-  int root_block_index = -1;
-  int blocks_num;
-  BF_Block_Init(&root_block);
-  BF_AllocateBlock(fileDesc, root_block);
-  BF_GetBlockCounter(fileDesc,  &blocks_num);
-  root_block_index = blocks_num - 1;
-
-  char* root_block_info = BF_Block_GetData(root_block);
-  /* Place 'I' and number of indexes in the block */
-  char I = 'I';
-  offset = 0;
-  memcpy(root_block_info + offset, &I, sizeof(char) );
-  int no_indxs = 1;
-  offset = sizeof(char);
-  memcpy(root_block_info + offset, &no_indxs, sizeof(int));
-  /* Place the key and 2 block indexes */
-  offset = sizeof(char) + sizeof(int);
-  memcpy(root_block_info + offset, append, strlen(append));
-
-  /* We place the index block of root in the first block */
-  offset = sizeof(char) + sizeof(int);
-  memcpy(first_block_info + offset, &root_block_index, sizeof(int));
-
-  /* Set dirty, Unpin, Destroy*/
-  BF_Block_SetDirty(first_block);
-  BF_Block_SetDirty(root_block);
-  BF_UnpinBlock(first_block);
-  BF_UnpinBlock(root_block);
-  BF_Block_Destroy(&root_block);
-  BF_Block_Destroy(&first_block);
-  //TODO in insert , call key as a pointer
-  //TODO CALL_BF
-  return root_block_index;
-}

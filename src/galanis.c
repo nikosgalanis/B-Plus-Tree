@@ -7,36 +7,6 @@ extern int AM_errno;
 #define AME_ERROR -1 //TODO: change this
 #define CHAR_SIZE 40
 
-Record* create_record(int fileDesc, void* key, void* value) {
-	BF_Block* first_block;
-	BF_Block_Init(&first_block);
-	/* And get access to it */
-	BF_GetBlock(fileDesc, 0, first_block);
-	/* Get access to its data */
-	char* first_block_info = BF_Block_GetData(first_block);
-	/* Store the info of the key and the value */
-	char attrType1, attrType2;
-	int attrLength1, attrLength2;
-	int offset = sizeof(char) + 4 * sizeof(int);
-	memcpy(&attrType1, first_block_info + offset, sizeof(char));
-	offset += sizeof(char);
-	memcpy(&attrLength1, first_block_info + offset, sizeof(int));
-	offset += sizeof(int);
-	memcpy(&attrType2, first_block_info + offset, sizeof(char));
-	offset += sizeof(char);
-	memcpy(&attrLength2, first_block_info + offset, sizeof(int));
-	/* Create a new record, and store the desired info */
-	Record* rec = malloc(sizeof(Record));
-	/* Allocate space for the key and the value, and copy the data there */
-	rec->key = malloc(attrLength1);
-	memcpy(rec->key, key, attrLength1);
-	rec->value = malloc(attrLength2);
-	memcpy(rec->value, key, attrLength2);
-	rec->size = sizeof(Record) + attrLength1 + attrLength2;
-	return rec;
-
-}
-
 void AM_Init() {
 	BF_Init(MRU);
 	/* Initialize the files array*/

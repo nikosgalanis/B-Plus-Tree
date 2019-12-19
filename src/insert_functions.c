@@ -4,7 +4,82 @@
 
 #include "../include/insert_functions.h"
 
-int create_root(int fileDesc,  void *key) {
+Record* create_record(int fileDesc, void* key, void* value) {
+	BF_Block* first_block;
+	BF_Block_Init(&first_block);
+	/* And get access to it */
+	BF_GetBlock(fileDesc, 0, first_block);
+	/* Get access to its data */
+	char* first_block_info = BF_Block_GetData(first_block);
+	/* Store the info of the key and the value */
+	char attrType1, attrType2;
+	int attrLength1, attrLength2;
+	int offset = sizeof(char) + 4 * sizeof(int);
+	memcpy(&attrType1, first_block_info + offset, sizeof(char));
+	offset += sizeof(char);
+	memcpy(&attrLength1, first_block_info + offset, sizeof(int));
+	offset += sizeof(int);
+	memcpy(&attrType2, first_block_info + offset, sizeof(char));
+	offset += sizeof(char);
+	memcpy(&attrLength2, first_block_info + offset, sizeof(int));
+	/* Create a new record, and store the desired info */
+	Record* rec = malloc(sizeof(Record));
+	/* Allocate space for the key and the value, and copy the data there */
+	rec->key = malloc(attrLength1);
+	memcpy(rec->key, key, attrLength1);
+	rec->value = malloc(attrLength2);
+	memcpy(rec->value, key, attrLength2);
+	rec->size = sizeof(Record) + attrLength1 + attrLength2;
+	return rec;
+
+}
+
+int create_root(int fileDesc, char* append) {
+  BF_Block *first_block, *root_block;
+  int offset;
+  /* Get data of 1st block */
+  BF_Block_Init(&first_block);
+  BF_GetBlock(fileDesc, 0, first_block);
+  char *first_block_info = BF_Block_GetData(first_block);
+
+  /* key to a new variable */
+  /* Create root block */
+  int root_block_index = -1;
+  int blocks_num;
+  BF_Block_Init(&root_block);
+  BF_AllocateBlock(fileDesc, root_block);
+  BF_GetBlockCounter(fileDesc,  &blocks_num);
+  root_block_index = blocks_num - 1;
+
+  char* root_block_info = BF_Block_GetData(root_block);
+  /* Place 'I' and number of indexes in the block */
+  char I = 'I';
+  offset = 0;
+  memcpy(root_block_info + offset, &I, sizeof(char) );
+  int no_indxs = 1;
+  offset = sizeof(char);
+  memcpy(root_block_info + offset, &no_indxs, sizeof(int));
+  /* Place the key and 2 block indexes */
+  offset = sizeof(char) + sizeof(int);
+  memcpy(root_block_info + offset, append, strlen(append));
+
+  /* We place the index block of root in the first block */
+  offset = sizeof(char) + sizeof(int);
+  memcpy(first_block_info + offset, &root_block_index, sizeof(int));
+
+  /* Set dirty, Unpin, Destroy*/
+  BF_Block_SetDirty(first_block);
+  BF_Block_SetDirty(root_block);
+  BF_UnpinBlock(first_block);
+  BF_UnpinBlock(root_block);
+  BF_Block_Destroy(&root_block);
+  BF_Block_Destroy(&first_block);
+  //TODO in insert , call key as a pointer
+  //TODO CALL_BF
+  return root_block_index;
+}
+
+int create_empty_root(int fileDesc,  void *key) {
   BF_Block *first_block, *root_block, *first_data_block, *second_data_block;
   int offset;
   /* Get data of 1st block */

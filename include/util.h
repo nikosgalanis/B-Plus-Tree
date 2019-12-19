@@ -48,6 +48,7 @@ typedef enum {
 typedef struct {
   void* key;
   void* value;
+  int size;
 } Record;
 
 typedef struct {
