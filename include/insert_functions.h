@@ -12,7 +12,10 @@ int create_root(int fileDesc, char* append);
 
 int create_empty_root(int fileDesc,  void *key);
 
-boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record);
+boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record, char key_type);
+
+boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char key_type, int key_size);
+
 
 boolean record_fits_data(int fileDesc, int target_block_index);
 

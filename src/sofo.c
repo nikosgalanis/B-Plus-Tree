@@ -61,10 +61,10 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 			attrLength1new = attrLength1;
 		}
     /* the following math occur from the metadata that we must store */
-	  int max_index_pointers = ((BF_BLOCK_SIZE - 2 * sizeof(int) - sizeof(char)) / (attrLength1new + sizeof(int))) + 1;
+	  int max_index_keys = ((BF_BLOCK_SIZE - 2 * sizeof(int) - sizeof(char)) / (attrLength1new + sizeof(int)));
 	  int max_records_block = (BF_BLOCK_SIZE - 3 * sizeof(int) - sizeof(char)) / sizeof(Record);
 		offset = sizeof(char) + 2 * sizeof(int);
-	  memcpy(first_block_info + offset, &max_index_pointers, sizeof(int));
+	  memcpy(first_block_info + offset, &max_index_keys, sizeof(int));
 		offset = sizeof(char) + 3 * sizeof(int);
 	  memcpy(first_block_info + offset, &max_records_block, sizeof(int));
 
