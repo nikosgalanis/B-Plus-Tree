@@ -29,9 +29,11 @@ Record* create_record(int fileDesc, void* key, void* value) {
 	memcpy(rec->key, key, attrLength1);
 	rec->value = malloc(attrLength2);
 	memcpy(rec->value, key, attrLength2);
-	rec->size = sizeof(Record) + attrLength1 + attrLength2;
+  /* The size we are going to use in allocations, is the size of the pointer +
+     the size of the key and the value */
+  rec->size = sizeof(Record) + attrLength1 + attrLength2;
+  /* Return the record */
 	return rec;
-
 }
 
 int create_root(int fileDesc, char* append) {
@@ -181,7 +183,7 @@ int create_empty_root(int fileDesc,  void *key) {
   return root_block_index;
 }
 
-boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
+boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record) {
   /* Initialize a pointer to the first block, and get its data */
   BF_Block* first_block;
   BF_Block_Init(&first_block);
@@ -215,7 +217,7 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
     Record* curr_rec;
     memcpy(curr_rec, data + offset, sizeof(new_record));
     /* If the key of the record we want to insert is smaller than the current one */
-    if (new_record.key < curr_rec->key) {
+    if (new_record->key < curr_rec->key) {
       /* Shift all records to the right to create space */
       memmove(data + offset + sizeof(new_record), data + offset, (total_records - i) * sizeof(new_record));
       /* Insert the new record */
@@ -227,14 +229,14 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record new_record) {
     offset += sizeof(new_record);
    }
    /* If we haven't yet inserted the record, now its time(at the end of the block) */
-   memcpy(data + offset, &new_record, sizeof(new_record));
+   memcpy(data + offset, new_record, sizeof(new_record));
    BF_Block_SetDirty(block);
    BF_UnpinBlock(block);
    BF_Block_Destroy(&block);
    return true;
 }
 /* !!!!SOS!!!! If we ever get shit data into a data block, the error will be in here */
-char* split_data_block(int fileDesc, int block_num, Record* new_record, char key_type) {
+char* split_data_block(int fileDesc, int block_num, Record* new_record, char key_type, int key_size) {
   /* Initialize a pointer to the block */
   BF_Block* block;
   BF_Block_Init(&block);
@@ -245,60 +247,86 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   /* Get the total records that the block contains*/
   int total_records;
   memcpy(&total_records, block_info + sizeof(char), sizeof(int));
+
   /* Get the position that we want to split. If the block contains odd number of
     records, we want one more on the right */
   int split_pos = total_records / 2;
-  int offset = sizeof(char);
+  /* If the key we want to insert is grater than the key of the middle record of
+     the block, then we want to keep +1 records in the left block, so use the
+     generic compare function that we have */
+  Record* middle;
+  int offset = 3 * sizeof(int) + sizeof(char) + split_pos * sizeof(new_record);
+  memcpy(middle, block_info + offset, sizeof(Record));
+  int right = compare(new_record->key, GREATER_THAN, middle->key, key_type);
+  split_pos += right;
+
   /* Update the total_records. There will be those that the block will have after
      the split */
+  offset = sizeof(char);
   memcpy(block_info + offset, &split_pos, sizeof(int));
   /* Allocate and initialize a new data block */
   BF_Block* new_block;
   BF_Block_Init(&new_block);
   BF_AllocateBlock(fileDesc, new_block);
   char* new_block_data = BF_Block_GetData(new_block);
+
   /* Save its info: the fact that is a data block + the amount of records we are
     going to insert */
   char type = 'D'; int init_records = total_records - split_pos;
   memcpy(new_block_data, &type, sizeof(char));
   memcpy(new_block_data + sizeof(char), &init_records, sizeof(int));
+
   /* Update the neighbor data block pointers as following */
-  int prev; int next;
+  int prev; int old_next; int next;
   BF_GetBlockCounter(fileDesc, &next); next--;
   /* the new next of the first block, is the one that we just allocated */
   offset += 2 * sizeof(int);
+  memcpy(&old_next, block_info + offset, sizeof(int));
   memcpy(block_info + offset, &next, sizeof(int));
-  offset += sizeof(int) + split_pos * sizeof(new_record);
   /* the previous block of the new one, is the one that we got as an argument */
   prev = block_num;
-  next = -1;
+  next = old_next;
   int new_block_offset = sizeof(char) + sizeof(int);
   memcpy(new_block_data + new_block_offset, &prev, sizeof(int));
   new_block_offset += sizeof(int);
   memcpy(new_block_data + new_block_offset, &next, sizeof(int));
   new_block_offset += sizeof(int);
-  /* If the key we want to insert is grater than the key of the middle record of
-     the block, then we want to keep +1 records in the left block, so use the
-     generic compare function that we have */
-  Record* middle;
-  memcpy(middle, block_info + offset, sizeof(Record));
-  int right = compare(new_record->key, GREATER_THAN, middle->key, key_type);
-  split_pos += right;
+  offset += sizeof(int) + split_pos * sizeof(new_record);
+
   /* Copy the data from the full block to the empty, so we have two half-full
   data blocks */
   memcpy(new_block_data + new_block_offset, block_info + offset, init_records * sizeof(new_record));
+
   /* We want to return the key of the first record of the left block, and the
      two pointers surrounding it */
   char* to_return = malloc(sizeof(new_record) + 2 * sizeof(int));
   memcpy(to_return, &block_num, sizeof(int));
-  memcpy(to_return + sizeof(int), new_block_data + offset, sizeof(new_record));
+  memcpy(to_return + sizeof(int), new_record->key, key_size);
+  /* Call BF_GetBlockCounter to find the number of the newly allocated block */
   int new_block_num;
   BF_GetBlockCounter(fileDesc, &new_block_num);
   new_block_num--;
-  memcpy(to_return + sizeof(int) + sizeof(new_record), &new_block_num, sizeof(int));
-  /* Call BF_GetBlockCounter to find the number of the newly allocated block */
+  memcpy(to_return + sizeof(int) + key_size, &new_block_num, sizeof(int));
+
   /* Fill the rest of the first block with -1 values */
   memset(block_info + offset, -1, init_records * sizeof(new_record));
+  /*Finally, add the new record in the correct block */
+  if (right == 0) {
+    data_sorted_insert(block_num, fileDesc, new_record);
+    /*update the total records of the block */
+    int new_recs;
+    memcpy(&new_recs, block_info + sizeof(char), sizeof(int));
+    new_recs++;
+    memcpy(block_info + sizeof(char), &new_recs, sizeof(int));
+  }
+  else {
+    data_sorted_insert(new_block_num, fileDesc, new_record);
+    /*update the total records of the block */
+    int new_recs;
+    memcpy(&new_recs, new_block_data + sizeof(char), sizeof(int));
+    new_recs++;
+    memcpy(new_block_data + sizeof(char), &new_recs, sizeof(int));
+  }
   /* Set the previously edited blocks dirty, and unpin the, from the memory */
   BF_Block_SetDirty(block);
   BF_Block_SetDirty(new_block);
