@@ -221,7 +221,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   int new_block_num;
   BF_GetBlockCounter(fileDesc, &new_block_num);
   new_block_num--;
-  memcpy(to_return + sizeof(int) + sizeof(new_record), new_block_num, sizeof(int));
+  memcpy(to_return + sizeof(int) + sizeof(new_record), &new_block_num, sizeof(int));
   /* Call BF_GetBlockCounter to find the number of the newly allocated block */
   /* Fill the rest of the first block with -1 values */
   memset(block_info + offset, -1, init_records * sizeof(new_record));
@@ -299,21 +299,21 @@ boolean record_fits_data(int fileDesc, int target_block_index) {
 	BF_Block_Init(&target_block);
 
 	BF_GetBlock(fileDesc, 0, first_block);
-	char *first_block_info = BF_Block_GetData(first_block);
-	BF_GetBlock(fileDesc,target_lock_index,target_block);
+	char* first_block_info = BF_Block_GetData(first_block);
+	BF_GetBlock(fileDesc, target_block_index, target_block);
 	char* target_block_info = BF_Block_GetData(target_block);
-	offset = sizeof(char);
+	int offset = sizeof(char);
 	int target_block_records;
-	memcpy(&target_block_records, target_block_info + offset. sizeof(int));
+	memcpy(&target_block_records, target_block_info + offset, sizeof(int));
 
 	int max_block_records;
 	memcpy(&max_block_records,first_block_info + offset, sizeof(int));
 
 	if (max_block_records > target_block_records) {
-		fits = 1;
+		fits = true;
 	}
 	else {
-		fits = 0;
+		fits = false;
 	}
 	BF_UnpinBlock(target_block);
 	BF_UnpinBlock(first_block);
@@ -322,7 +322,7 @@ boolean record_fits_data(int fileDesc, int target_block_index) {
 	return fits;
 }
 
-int find_data_block(int fileDesc, int root_num, void *key) {
+Stack* find_data_block(int fileDesc, int root_num, void *key) {
   /* Initialize a pointer to a block */
   BF_Block* first_block;
   BF_Block_Init(&first_block);

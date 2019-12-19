@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/util.h"
 #include "../include/insert_functions.h"
 
 #define AME_ERROR -1 //TODO: change this
@@ -125,7 +124,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	//to int to target block
 	////////////////////////////////
 	//TODO check an exei xwro auto to data block
-	boolean record_fits_data(fileDesc, target_block_index);
+	//boolean record_fits_data(fileDesc, target_block_index);
 
 	////////////////////////////////
 
