@@ -74,7 +74,6 @@ typedef struct {
 
 typedef struct {
   int file_index;
-  char file_name[BUFF_SIZE];
   int op;
   void* value;
   Entry_index last_entry;

@@ -53,7 +53,7 @@ int AM_OpenIndex(char *fileName) {
 		return AME_ERROR; //TODO: Change to a true error
 	/*Initialize the file info*/
 	Files->open[index].file_index = fileDesc;
-	memcpy(Files->open[Files->total].file_name, fileName, sizeof(fileName));
+	memcpy(Files->open[index].file_name, fileName, sizeof(fileName));
 	/* Initialize a pointer to the first block */
 	BF_Block* first_block;
 	BF_Block_Init(&first_block);
@@ -73,6 +73,8 @@ int AM_OpenIndex(char *fileName) {
 	/* That is how much we must come through to go to the max_entries counter */
 	offset += sizeof(int);
 	memcpy(&Files->open[index].max_entries, first_block_info + offset, sizeof(int));
+	/* Increase number of open files */
+	Files->total++;
 	/* Unpin and destroy the block */
 	BF_UnpinBlock(first_block);
 	BF_Block_Destroy(&first_block);
@@ -114,16 +116,16 @@ void AM_PrintError(char *errString) {
   /* print an error message according to our global variable */
   switch (AM_errno) {
     case BF_ERR:
-      printf("The error occured in the Block File level\n");
+      printf("The error occured in the Block File level.\n");
       return;
     case MEM_ERR:
-      printf("The error occured during allocation of memory in stack\n");
+      printf("The error occured during allocation of memory in stack.\n");
       return;
     case MAX_FILES_ERR:
-      printf("Tried to open too many files. Last requested file will not be oppened\n");
+      printf("Tried to open too many files. Last requested file will not be opened.\n");
       return;
     case WRONG_FILE_ERR:
-      printf("Tried to open a non-AM file. This file will not be oppened\n");
+      printf("Tried to open a non-AM file. This file will not be opened.\n");
       return;
     case TYPE_ERR:
       printf("Tried to initialize a file with unknown type of data.\n");
@@ -136,4 +138,7 @@ void AM_Close() {
   /* free the struct for the open files */
   free(Files->open);
   free(Files);
+	/* free the struct for the open scans */
+	free(Scans->open);
+	free(Scans);
 }
