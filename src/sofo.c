@@ -173,10 +173,6 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 
 	}
 
-	if (Empty(path)) {
-		create_empty_root(/**/);
-
-	}
 	///////////////////////////////
 	//TODO sofo
 
