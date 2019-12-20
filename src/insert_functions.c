@@ -124,7 +124,7 @@ int create_empty_root(int fileDesc,  void *key) {
   BF_AllocateBlock(fileDesc, second_data_block);
   BF_GetBlockCounter(fileDesc,  &blocks_num);
   int second_data_block_index = blocks_num - 1;
-
+	BF_GetBlock(fileDesc, second_data_block_index, second_data_block);
   char* first_data_block_info = BF_Block_GetData(first_data_block);
   char* second_data_block_info = BF_Block_GetData(second_data_block);
   /* Place 'D' and number of records in the block */
@@ -588,26 +588,27 @@ Stack* find_data_block(int fileDesc, int root_num, void *key) {
   BF_Block_Init(&block);
   /* Starting from the root */
   int block_num = root_num;
+	printf("The root is %d\n",root_num);
   char block_idf;
   int no_indxs;
   void *block_key;
-  do {
+	char* block_info;
+	do {
     BF_GetBlock(fileDesc, block_num, block);
+		printf("Going to block_num %d\n",block_num );
     /* Push the block number to the stack */
     Push(path, block_num);
     /* Get block data */
-    char* block_info = BF_Block_GetData(block);
+		block_info = BF_Block_GetData(block);
     /* Get block identifier */
     int block_offset = 0;
-		printf("block num is %d\n",block_num );
-    memcpy(&block_idf, block_info + block_offset, sizeof(char));
+		memcpy(&block_idf, block_info, sizeof(char));
     block_offset += sizeof(char);
     /* Check if we are not in Index block */
-		printf("block dif %c\n", block_idf);
-		int test;
-		memcpy(&test, block_info + sizeof(char), sizeof(char));
-		printf("tessst is %d\n",test );
+		printf("block idf %c\n", block_idf);
 		if (block_idf == 'D') {
+			BF_UnpinBlock(block);
+			BF_Block_Destroy(&block);
       return path;
     }
     /* Get number of indexes stored into the block */
@@ -627,7 +628,6 @@ Stack* find_data_block(int fileDesc, int root_num, void *key) {
 				found = true;
         /* Get corresponding index */
         memcpy(&block_num, block_info + block_offset - key_size, sizeof(int));
-				printf("!!!!!!!!!!!!!! vlock num %d\n",block_num );
         /* Unpin index block */
         BF_UnpinBlock(block);
 				/* Go one level down to the B+ tree */
@@ -638,6 +638,7 @@ Stack* find_data_block(int fileDesc, int root_num, void *key) {
 		if (found == false) {
 			/* We reached the end of the index block, so visit the most right branch */
 			memcpy(&block_num, block_info + block_offset, sizeof(int));
+			BF_UnpinBlock(block);
 		}
   } while (block_idf == 'I');
 

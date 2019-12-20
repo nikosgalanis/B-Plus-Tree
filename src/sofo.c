@@ -128,12 +128,12 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	BF_Block_SetDirty(first_block);
 	BF_UnpinBlock(first_block);
 
+
 	/** Create a stack in which we will hold the path from the root to the data
 	   block. In order to implement the possible recursive split of the blocks,
 		 we will pop from that stack to access higher levels of the tree */
 	 Stack* path;
    path = find_data_block(fileDesc, root_block_int, value1);
-	 printf("edw\n");
 	 char* append = malloc(new_record->size);
 	 memcpy(append, new_record, new_record->size);
 	 /* Pop the first element from the queue. It will be a data block */

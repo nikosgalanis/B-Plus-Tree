@@ -11,8 +11,8 @@
 {                               \
   BF_ErrorCode code = call;     \
   if (code != BF_OK) {          \
-    CALL_AM(BF_ERR);            \
     BF_PrintError(code);        \
+    CALL_AM(BF_ERR);            \
   }                             \
 }
 
@@ -22,6 +22,7 @@
   if (code != AM_OK) {                        \
     AM_PrintError("An error has occured");    \
     AM_errno = code;                          \
+    return -1;                                   \
   }                                           \
 }
 
