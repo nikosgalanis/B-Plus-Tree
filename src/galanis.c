@@ -9,7 +9,7 @@ extern int AM_errno;
 
 void AM_Init() {
 	BF_Init(MRU);
-	/* Initialize the files array*/
+	/* Initialize the files array */
 	Files = malloc(sizeof(Open_Files));
 	if (Files == NULL) {
 		printf("Memory exhausted!\n");
@@ -21,10 +21,24 @@ void AM_Init() {
 		return;
 	}
 	for (int i = 0; i < MAX_OPEN_FILES; ++i) {
-		Files->open[i].file_index = EMPTY_FILE;
+		Files->open[i].file_index = EMPTY;
 	}
 	Files->total = 0;
-	return;
+	/* Initialize the scans array */
+	Scans = malloc(sizeof(Open_Scans));
+	if (Scans == NULL) {
+		printf("Memory exhausted!\n");
+		return;
+	}
+	Scans->open = malloc(MAX_SCAN_FILES * sizeof(Scan_info));
+	if (Scans->open == NULL) {
+		printf("Memory exhausted!\n");
+		return;
+	}
+	for (int i = 0; i < MAX_OPEN_SCANS; ++i) {
+		Scans->open[i].file_index = NULL;
+	}
+	Scans->total = 0;
 }
 
 
@@ -35,7 +49,7 @@ int AM_OpenIndex(char *fileName) {
 	/* Find the index of the array that we want to insert the file */
 	int index = find_empty_index(Files->open);
 	/* We can not open more files than allowed */
-	if (index == EMPTY_FILE)
+	if (index == EMPTY)
 		return AME_ERROR; //TODO: Change to a true error
 	/*Initialize the file info*/
 	Files->open[index].file_index = fileDesc;
@@ -71,7 +85,7 @@ int AM_CloseIndex (int fileDesc) {
 	/* We are going to remove the entry, and replace its data with -1 and spaces */
 	int indexDesc = find_index(fileDesc);
 	strcpy(Files->open[indexDesc].file_name,"");
-	Files->open[indexDesc].file_index = EMPTY_FILE;
+	Files->open[indexDesc].file_index = EMPTY;
 	Files->open[indexDesc].total_records = -1;
 	Files->open[indexDesc].max_entries = -1;
 	Files->open[indexDesc].max_pointers = -1;
