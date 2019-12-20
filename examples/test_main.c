@@ -18,4 +18,6 @@ int main(void) {
   int k1 = 1, k2 = 2, k3 = 3, k4 = 4;
   int v1 = 1, v2 = 2, v3 = 3, v4 = 4;
   AM_InsertEntry(eNentry, (void*)&v1, (void*)&k1);
+  AM_InsertEntry(eNentry, (void*)&v2, (void*)&k2);
+
 }

@@ -122,9 +122,11 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	/* Get the size and the type of the key from the 1st block */
 	char key_type; int key_size;
 	offset = sizeof(char) + 4 * sizeof(int);
-	memcpy(first_block_info + offset, &key_type, sizeof(char));
+	memcpy(&key_type, first_block_info + offset, sizeof(char));
 	offset = 2 * sizeof(char) + 4 * sizeof(int);
-	memcpy(first_block_info +  offset, &key_size, sizeof(int));
+	memcpy(&key_size, first_block_info +  offset, sizeof(int));
+	BF_Block_SetDirty(first_block);
+	BF_UnpinBlock(first_block);
 
 	/** Create a stack in which we will hold the path from the root to the data
 	   block. In order to implement the possible recursive split of the blocks,
@@ -132,17 +134,22 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	 Stack* path;
    path = find_data_block(fileDesc, root_block_int, value1);
 	 printf("edw\n");
-	 char* append;
-	 memcpy(append, new_record, sizeof(Record));
+	 char* append = malloc(new_record->size);
+	 memcpy(append, new_record, new_record->size);
 	 /* Pop the first element from the queue. It will be a data block */
 	 int target_block_index = Pop(path);
+	 printf("target is %d\n",target_block_index);
 	 /* If there is enough room in that data block */
 	 if (record_fits_data(fileDesc,target_block_index) == true) {
 		/* Just insert the new record */
-		data_sorted_insert(target_block_index,fileDesc, new_record, key_type);
+		data_sorted_insert(target_block_index, fileDesc, new_record, key_type);
 		/*all records by 1*/
 		int all_records;
 		offset = sizeof(char);
+		/* re-gain access to the 1st block */
+		BF_GetBlock(fileDesc, 0, first_block);
+		first_block_info = BF_Block_GetData(first_block);
+
 		memcpy(&all_records,first_block_info + offset, sizeof(int));
 		all_records++;
 		memcpy(first_block_info + offset, &all_records,sizeof(int));
@@ -181,6 +188,9 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 		}
 		/*If we have reached the root */
 		if (target_block_index == root_block_int) {
+			/* re-gain access to the 1st block */
+			BF_GetBlock(fileDesc, 0, first_block);
+			first_block_info = BF_Block_GetData(first_block);
 			/* create a new root, and insert the tuple from the previous level */
 			int new_root_block_int = create_root(fileDesc, append);
 			/* Save the new root pointer in the first block */

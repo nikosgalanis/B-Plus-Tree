@@ -126,7 +126,7 @@ int create_empty_root(int fileDesc,  void *key) {
   int second_data_block_index = blocks_num - 1;
 
   char* first_data_block_info = BF_Block_GetData(first_data_block);
-  char* second_data_block_info= BF_Block_GetData(second_data_block);
+  char* second_data_block_info = BF_Block_GetData(second_data_block);
   /* Place 'D' and number of records in the block */
   char D = 'D';
   offset = 0;
@@ -177,7 +177,7 @@ int create_empty_root(int fileDesc,  void *key) {
   BF_Block_Destroy(&first_block);
   BF_Block_Destroy(&second_data_block);
   BF_Block_Destroy(&first_data_block);
-  
+
   return root_block_index;
 }
 
@@ -214,7 +214,7 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record, char
     BF_UnpinBlock(block);
     BF_Block_Destroy(&block);
     return false;
-  }  
+  }
   int pos = 0;
   /* Traverse all the current records */
   for (int i = 0; i < total_records; ++i) {
@@ -229,7 +229,7 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record, char
       /*total records of block*/
       total_records++;
       memcpy(data + sizeof(char), &total_records, sizeof(int));
-      
+
       BF_Block_SetDirty(block);
       BF_UnpinBlock(block);
       BF_Block_Destroy(&block);
@@ -274,9 +274,10 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 		BF_Block_Destroy(&block);
 		return false;
 	}
+	int total_keys;
+	memcpy(&total_keys, data + sizeof(char), sizeof(int));
 	/* Initialize the offset to find where to store the new key */
 	offset = sizeof(char) + sizeof(int);
-	int total_keys;
 	/*If the block is full, return an error*/
 	if (total_keys == max_keys){
     printf("key doesn't fit\n");
@@ -300,7 +301,8 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 			memmove(curr_tuple + 2 * sizeof(int) + key_size, curr_tuple + sizeof(int), (total_keys - i) * key_size + sizeof(int));
 			/* Insert the new key */
 			memcpy(curr_tuple + offset, new_tuple, 2 * sizeof(int) + key_size);
-
+			total_keys++;
+	 	 	memcpy(data + sizeof(char), &total_keys, sizeof(int));
       BF_Block_SetDirty(block);
 	    BF_UnpinBlock(block);
 	    BF_Block_Destroy(&block);
@@ -311,6 +313,8 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 	 }
 	 /* If we haven't yet inserted the key, now its time(at the end of the block) */
 	 memcpy(data + offset, new_tuple, 2 * sizeof(int) + key_size);
+	 total_keys++;
+	 memcpy(data + sizeof(char), &total_keys, sizeof(int));
 	 /* Unpin and destroy the block */
 	 BF_Block_SetDirty(block);
 	 BF_UnpinBlock(block);
@@ -397,7 +401,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
     new_block_num--;
     data_sorted_insert(new_block_num, fileDesc, new_record, key_type);
     /*the total records of the block have been updated inside the sorted_insert_block */
-  }  
+  }
 	/* We want to return the key of the first record of the left block, and the
 		 two pointers surrounding it */
 	char* to_return = malloc(new_record->size + 2 * sizeof(int));
@@ -595,30 +599,46 @@ Stack* find_data_block(int fileDesc, int root_num, void *key) {
     char* block_info = BF_Block_GetData(block);
     /* Get block identifier */
     int block_offset = 0;
+		printf("block num is %d\n",block_num );
     memcpy(&block_idf, block_info + block_offset, sizeof(char));
     block_offset += sizeof(char);
     /* Check if we are not in Index block */
-    if (block_idf == 'D') {
+		printf("block dif %c\n", block_idf);
+		int test;
+		memcpy(&test, block_info + sizeof(char), sizeof(char));
+		printf("tessst is %d\n",test );
+		if (block_idf == 'D') {
       return path;
     }
     /* Get number of indexes stored into the block */
     memcpy(&no_indxs, block_info + block_offset, sizeof(int));
     block_offset += sizeof(int);
+		printf("no indexes is %d\n",no_indxs);
+		boolean found = false;
     for (int i = 0; i < no_indxs; ++i) {
       /* surpass index to block */
       block_offset += sizeof(int);
       memcpy(block_key, block_info + block_offset, key_size);
-			printf("stak ok\n");
       /* Compare key with block key */
       int result = compare(key, LESS_THAN_OR_EQUAL, block_key, key_type);
       /* if given key <= block key go to corresponding block */
       if (result) {
+				/* Update the found variable */
+				found = true;
         /* Get corresponding index */
         memcpy(&block_num, block_info + block_offset - key_size, sizeof(int));
+				printf("!!!!!!!!!!!!!! vlock num %d\n",block_num );
         /* Unpin index block */
         BF_UnpinBlock(block);
+				/* Go one level down to the B+ tree */
+				break;
       }
+			block_offset += key_size;
     }
+		if (found == false) {
+			/* We reached the end of the index block, so visit the most right branch */
+			memcpy(&block_num, block_info + block_offset, sizeof(int));
+		}
   } while (block_idf == 'I');
 
   return path;
