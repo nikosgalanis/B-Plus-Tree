@@ -103,7 +103,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 }
 
 int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
-
+	/* Create a struct record, with the desired (key, value) tuple */
 	Record* new_record = create_record(fileDesc, value1, value2);
 	BF_Block *first_block;
 	int offset;
@@ -115,57 +115,68 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	offset = sizeof(char) + sizeof(int);
 	int root_block_int;
 	memcpy(&root_block_int, first_block_info + offset, sizeof(int));
-	/* Check if -1 */
+	/* Check if there is no root yet. In that case, create an empty one */
 	if (root_block_int == -1) {
 		root_block_int = create_root(fileDesc, value1);
 	}
+	/* Get the size and the type of the key from the 1st block */
+	char key_type; int key_size;
+	offset = sizeof(char) + 4 * sizeof(int);
+	memcpy(first_block_info + offset, &key_type, sizeof(char));
+	offset = 2 * sizeof(char) + 4 * sizeof(int);
+	memcpy(first_block_info +  offset, &key_size, sizeof(int));
 
-	/////////////////////////////////////////////////////////////////////
+	/** Create a stack in which we will hold the path from the root to the data
+	   block. In order to implement the possible recursive split of the blocks,
+		 we will pop from that stack to access higher levels of the tree */
 	 Stack* path;
-  //  path = find_data_block(fileDesc, root_block_int, value1);
-	//  char* append;
-	//  memcpy(append, new_record, sizeof(Record));
-	//  int target_block_index;
-	// //Epistrefei stack
-	// //estw oti
-	// /////////////////////////////////
-	// //TODO Galanis Create record
-	// ////////////////////////////////
-	// ////////////////////////////////
-	// //TODO check an exei xwro auto to data block
-	// //boolean record_fits_data(fileDesc, target_block_index);
-	// //TODO create empty root function gia otan kanw split thn riza
-	// ////////////////////////////////
-	// while (! Empty(path)) {
-	// 	//TODO check stack.c
-	// 	target_block_index = pop(&path);
-	// 	if(/*is datablock*/) {
-	// 		if (record_fits_data(fileDesc,target_block_index) == true) {
-	// 			//TODO Initialize record
-	// 			//TODO data_sorted_insert na pairnei char*
-	// 			//TODO index_soertd_insert na pairnei char*
-	// 			data_sorted_insert(target_block_index,fileDesc, Record new_record);
-	// 			break;
-	// 		}
-	// 		else {
-	// 			append = split_data_block(/**/);
-	// 		}
-	// 	}
-	// 	else {
-	// 		if (key_fits_index(/**/)) {
-	// 			index_sorted_insert(/**/);
-	// 			break;
-	// 		}
-	// 		else {
-	// 			append = split_index_block(/**/);
-	// 		}
-	// 	}
-	// }
-	//
-	// if (Empty(path)) {
-	// 	create_empty_root(/**/);
-	//
-	// }
+   path = find_data_block(fileDesc, root_block_int, value1);
+	 char* append;
+	 memcpy(append, new_record, sizeof(Record));
+	 /* Pop the first element from the queue. It will be a data block */
+	 int target_block_index = Pop(path);
+	 /* If there is enough room in that data block */
+	 if (record_fits_data(fileDesc,target_block_index) == true) {
+		 /* Just insert the new record */
+		 data_sorted_insert(target_block_index,fileDesc, new_record, key_type);
+	 }
+	 /** If there is no more room, split the block into 2, so the both can hold
+	 		 more records */
+	 else {
+		 append = split_data_block(fileDesc, target_block_index, new_record, key_type, key_size);
+
+	 }
+
+	/** while there are still index blocks in the stack (aka we have not reached
+		  the root) */
+	while (! Empty(path)) {
+		//TODO check stack.c
+		/* Pop the upeer level */
+		target_block_index = pop(&path);
+			if (key_fits_index(/**/)) {
+				index_sorted_insert(/**/);
+				break;
+			}
+			else {
+				append = split_index_block(/**/);
+			}
+			/*If we have reached the root */
+			if (target_block_index == root_block_int) {
+				/* create a new root, and insert the tuple from the previous level */
+				int new_root_block_int = create_root(fileDesc, append);
+				/* Save the new root pointer in the first block */
+				offset = sizeof(char) + sizeof(int);
+				memcpy(first_block_info + offset, &new_root_block_int, sizeof(int));
+				/*Break the loop */
+				break;
+			}
+
+	}
+
+	if (Empty(path)) {
+		create_empty_root(/**/);
+
+	}
 	///////////////////////////////
 	//TODO sofo
 
@@ -184,8 +195,6 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 				insert se auto to apotelesma tou teleutaiou split;
 				+ antikatasash sto  1o block
 			} */
-	//TODO Na auksisoyme ta ints twn data blocks gia ta records , twn indexes gia ta index blocks , kai sto first block gia ta total records
 	////////////////////////////////
 	return AME_OK;
 }
-//check if record fits in block

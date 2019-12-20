@@ -208,6 +208,7 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record, char
   /* Initialize the offset to find where to store the new record */
   offset = sizeof(char) + 3 * sizeof(int);
   int total_records;
+	memcpy(&total_records, data + sizeof(char), sizeof(int));
   /*If the block is full, return an error*/
   if (total_records == max_records)
     return false;
@@ -230,6 +231,10 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record, char
    }
    /* If we haven't yet inserted the record, now its time(at the end of the block) */
    memcpy(data + offset, new_record, sizeof(new_record));
+	 /* Increase the total records of the block */
+	 total_records ++;
+	 memcpy(data + sizeof(char), &total_records, sizeof(int));
+	 /* Set dirty and unpin */
    BF_Block_SetDirty(block);
    BF_UnpinBlock(block);
    BF_Block_Destroy(&block);
@@ -311,8 +316,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   int total_records;
   memcpy(&total_records, block_info + sizeof(char), sizeof(int));
 
-  /* Get the position that we want to split. If the block contains odd number of
-    records, we want one more on the right */
+  /* Get the position that we want to split. */
   int split_pos = total_records / 2;
   /* If the key we want to insert is grater than the key of the middle record of
      the block, then we want to keep +1 records in the left block, so use the
@@ -321,7 +325,6 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   int offset = 3 * sizeof(int) + sizeof(char) + split_pos * sizeof(new_record);
   memcpy(middle, block_info + offset, sizeof(Record));
   int right = compare(new_record->key, GREATER_THAN, middle->key, key_type);
-  split_pos += right;
 
   /* Update the total_records. There will be those that the block will have after
      the split */
@@ -401,7 +404,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   return to_return;
 }
 
-char* split_index_block(int fileDesc, int block_num, char* new_entry, int* new_block_num) {
+char* split_index_block(int fileDesc, int block_num, char* new_entry, char key_type, int key_size) {
   /* Initialize a pointer to the block */
   BF_Block* block;
   BF_Block_Init(&block);
@@ -415,7 +418,16 @@ char* split_index_block(int fileDesc, int block_num, char* new_entry, int* new_b
   int offset = sizeof(char) + sizeof(int);
   /* Get the position that we want to split. If the block contains odd number of
     records, we want one more on the right */
-  int split_pos = total_keys / 2 + (total_keys % 2 == 1);
+  int split_pos = total_keys / 2;
+	/* If the key we want to insert is grater than the middle key of the of the
+     block, then we want to keep +1 records in the left block, so use the
+     generic compare function that we have */
+  void* middle;
+  int offset = sizeof(int) + sizeof(char) + split_pos * sizeof(int) + (split_pos - 1) * key_size;
+  memcpy(middle, block_info + offset, key_size);
+  int right = compare(new_record->key, GREATER_THAN, middle, key_type);
+  split_pos += right
+
   /* Allocate and initialize a new index block */
   BF_Block* new_block;
   BF_Block_Init(&new_block);
@@ -476,6 +488,39 @@ boolean record_fits_data(int fileDesc, int target_block_index) {
 	memcpy(&max_block_records,first_block_info + offset, sizeof(int));
 
 	if (max_block_records > target_block_records) {
+		fits = true;
+	}
+	else {
+		fits = false;
+	}
+	BF_UnpinBlock(target_block);
+	BF_UnpinBlock(first_block);
+	BF_Block_Destroy(&first_block);
+	BF_Block_Destroy(&target_block);
+	return fits;
+}
+
+boolean key_fits_index(int fileDesc, int target_block_index) {
+	boolean fits;
+	BF_Block *first_block, *target_block;
+	//target_block that want to check if record fits
+	//and first block for max records
+	BF_Block_Init(&first_block);
+	BF_Block_Init(&target_block);
+
+	BF_GetBlock(fileDesc, 0, first_block);
+	char* first_block_info = BF_Block_GetData(first_block);
+	BF_GetBlock(fileDesc, target_block_index, target_block);
+	char* target_block_info = BF_Block_GetData(target_block);
+	int offset = sizeof(char);
+	int target_block_keys;
+	memcpy(&target_block_keys, target_block_info + offset, sizeof(int));
+
+	int max_block_keys;
+  offset = sizeof(char) + 2 * sizeof(int);
+	memcpy(&max_block_keys, first_block_info + offset, sizeof(int));
+
+	if (max_block_keys > target_block_keys) {
 		fits = true;
 	}
 	else {
