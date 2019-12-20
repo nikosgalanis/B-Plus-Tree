@@ -277,14 +277,14 @@ boolean print_index_block(int fileDesc, int target_block){
 		memcpy(&key ,block_data + offset, attrLength1);
 		switch (type1) {
 			case 'i':
-				printf("%d | ",key);
+				printf("%d | ",*((int*)key));
 				break;
 			case 'f':
-				printf("%f | ",key);
+				printf("%f | ",*((float*)key));
 				break;
 			case 'c':
 
-				printf("%s | ",key);
+				printf("%s | ",(char*)key);
 				break;
 			default:
 				printf("error type\n");
@@ -303,7 +303,7 @@ boolean print_index_block(int fileDesc, int target_block){
 	BF_UnpinBlock(first_block);
 	BF_Block_Destroy(&first_block);
 	return true;
-} 
+}
 
 boolean print_tree(int fileDesc, char print_type) {
 	/*print type is 'D' if we want to print data blocks, or 'I' for index*/
@@ -358,8 +358,8 @@ boolean print_tree(int fileDesc, char print_type) {
 			cur_block_info = BF_Block_GetData(cur_block);
 			memcpy(&left,cur_block_info + sizeof(char) + sizeof(int),sizeof(int));
 			memcpy(&right,cur_block_info + sizeof(char)+ 2 * sizeof(int) + key_size, sizeof(int));
-			
-			if (right != -1 ) { 
+
+			if (right != -1 ) {
 				Push(s,right);
 			}
 			if (left != -1 ) {
