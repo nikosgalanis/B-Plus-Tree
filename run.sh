@@ -1,4 +1,4 @@
 #!/bin/bash
-rm EMP-*
-make
-./build/main1
+rm *.db
+make test
+./build/test_main

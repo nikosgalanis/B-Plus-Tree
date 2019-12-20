@@ -10,6 +10,11 @@ main3:
 	@echo " Compile main3 ...";
 	gcc -I ./include/ -L ./lib/ -Wl,-rpath,./lib/ ./examples/main3.c ./src/util.c ./src/insert_functions.c ./src/sofo.c ./src/galanis.c ./src/pantelis.c  -lbf -o ./build/main3
 
+test:
+	@echo " Compile test main ...";
+	gcc -I ./include/ -L ./lib/ -Wl,-rpath,./lib/ ./examples/test_main.c ./src/stack.c ./src/util.c ./src/insert_functions.c ./src/sofo.c ./src/galanis.c ./src/pantelis.c -lbf -o ./build/test_main
+
+
 bf:
 	@echo " Compile bf_main ...";
 	gcc -I ./include/ -L ./lib/ -Wl,-rpath,./lib/ ./examples/bf_main.c -lbf -o ./build/runner -O2

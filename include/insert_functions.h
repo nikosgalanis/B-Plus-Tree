@@ -7,6 +7,8 @@ Record* create_record(int fileDesc, void* key, void* value);
 /* Returns a string which contains exactly the info we want to append
   to the higher level block. */
 char* split_data_block(int fileDesc, int block_num, Record* new_record, char key_type, int key_size);
+char* split_index_block(int fileDesc, int block_num, char* new_entry, char key_type, int key_size);
+
 /* Crates the root of B+ tree and returns its block index */
 int create_root(int fileDesc, char* append);
 
@@ -18,5 +20,6 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 
 
 boolean record_fits_data(int fileDesc, int target_block_index);
+boolean key_fits_index(int fileDesc, int target_block_index);
 
 Stack* find_data_block(int fileDesc, int root_num, void *key);

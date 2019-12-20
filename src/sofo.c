@@ -131,6 +131,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 		 we will pop from that stack to access higher levels of the tree */
 	 Stack* path;
    path = find_data_block(fileDesc, root_block_int, value1);
+	 printf("edw\n");
 	 char* append;
 	 memcpy(append, new_record, sizeof(Record));
 	 /* Pop the first element from the queue. It will be a data block */
@@ -152,45 +153,35 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	while (! Empty(path)) {
 		//TODO check stack.c
 		/* Pop the upeer level */
-		target_block_index = pop(&path);
-			if (key_fits_index(/**/)) {
-				index_sorted_insert(/**/);
-				break;
-			}
-			else {
-				append = split_index_block(/**/);
-			}
-			/*If we have reached the root */
-			if (target_block_index == root_block_int) {
-				/* create a new root, and insert the tuple from the previous level */
-				int new_root_block_int = create_root(fileDesc, append);
-				/* Save the new root pointer in the first block */
-				offset = sizeof(char) + sizeof(int);
-				memcpy(first_block_info + offset, &new_root_block_int, sizeof(int));
-				/*Break the loop */
-				break;
-			}
-
+		target_block_index = Pop(path);
+		/* if there is room for the extra key in that index block */
+		if (key_fits_index(fileDesc, target_block_index)) {
+			/* Insert it there */
+			index_sorted_insert(target_block_index, fileDesc, append, key_type, key_size);
+			/* and break the loop */
+			break;
+		}
+		/* If there is not enough space for the key */
+		else {
+			/** Split the block into 2, and keep the tuple (pointer, key, pointer)
+			    to append to the higher level */
+			append = split_index_block(fileDesc, target_block_index, append, key_type, key_size);
+		}
+		/*If we have reached the root */
+		if (target_block_index == root_block_int) {
+			/* create a new root, and insert the tuple from the previous level */
+			int new_root_block_int = create_root(fileDesc, append);
+			/* Save the new root pointer in the first block */
+			offset = sizeof(char) + sizeof(int);
+			memcpy(first_block_info + offset, &new_root_block_int, sizeof(int));
+			/*Break the loop */
+			break;
+		}
 	}
+	/* Set the first block empty, unpin it, and destroy the pointer */
+	BF_Block_SetDirty(first_block);
+	BF_UnpinBlock(first_block);
+	BF_Block_Destroy(&first_block);
 
-	///////////////////////////////
-	//TODO sofo
-
-	//TODO galanis
-
-	//while (Empty(Stack))
-	//An exei xwro apla insert mesa sto data block , me th sorted insert tou galani
-	//Else ,
-	//Αναδρομικά ή επαναληπτικά , βλέπουμε, μέχρι να βρεθεί χώρος για εγγραφες + ζεύγη
-	//1: Σπασιμο του του μπλοκ σε 2.
-	//2: Ισομερισμός εγγραφών(αν data block ) ή ζευγων(αν index block) στα 2 μπλοκ
-	//3: Εισαγωγή νέου ζευγους (κλειδι , δεικτης) στο κατάλληλο επίπεδο
-	//4: Αν σπάσει η ρίζα δημιουργείται νέα ρίζα και αντικατάσταση index και στο μηδενικό μπλοκ
-	/*	if (to stack exei to root pointer) {
-				create new root();
-				insert se auto to apotelesma tou teleutaiou split;
-				+ antikatasash sto  1o block
-			} */
-	////////////////////////////////
 	return AME_OK;
 }
