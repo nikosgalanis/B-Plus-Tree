@@ -26,8 +26,9 @@
 }
 
 /* Defines */
-#define BUFF_SIZE 64
 #define MAX_OPEN_FILES 20
+#define MAX_SCANS 20
+#define BUFF_SIZE 64
 #define EMPTY_FILE -1
 
 /* Enumerations */
@@ -60,12 +61,26 @@ typedef struct {
 } File_info;
 
 typedef struct {
+	int no_block;
+	int no_entry;
+} entry_index;
+
+typedef struct {
+  int file_index;
+  char file_name[BUFF_SIZE];
+  int op;
+  void* value;
+  entry_index last_entry;
+} Scan_info;
+
+typedef struct {
   File_info* open;
   int total;
 } Open_Files;
 
 /* Global variables definition */
 Open_Files* Files;
+Open_Scans* Scans;
 
 /* Function headers definition */
 int find_empty_index();
