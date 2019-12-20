@@ -117,7 +117,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	memcpy(&root_block_int, first_block_info + offset, sizeof(int));
 	/* Check if there is no root yet. In that case, create an empty one */
 	if (root_block_int == -1) {
-		root_block_int = create_root(fileDesc, value1);
+		root_block_int = create_empty_root(fileDesc, value1);
 	}
 	/* Get the size and the type of the key from the 1st block */
 	char key_type; int key_size;
@@ -138,8 +138,20 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	 int target_block_index = Pop(path);
 	 /* If there is enough room in that data block */
 	 if (record_fits_data(fileDesc,target_block_index) == true) {
-		 /* Just insert the new record */
-		 data_sorted_insert(target_block_index,fileDesc, new_record, key_type);
+		/* Just insert the new record */
+		data_sorted_insert(target_block_index,fileDesc, new_record, key_type);
+		/*all records by 1*/
+		int all_records;
+		offset = sizeof(char);
+		memcpy(&all_records,first_block_info + offset, sizeof(int));
+		all_records++;
+		memcpy(first_block_info + offset, &all_records,sizeof(int));
+		/* Set dirty and unpin */
+		BF_Block_SetDirty(first_block);
+		BF_UnpinBlock(first_block);
+		BF_Block_Destroy(&first_block);
+		printf("insert ok!\n");
+		return AME_OK;
 	 }
 	 /** If there is no more room, split the block into 2, so the both can hold
 	 		 more records */
@@ -178,10 +190,16 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 			break;
 		}
 	}
-	/* Set the first block empty, unpin it, and destroy the pointer */
+	/*all records in file raised by 1*/
+	int all_records;
+	offset = sizeof(char);
+	memcpy(&all_records,first_block_info + offset, sizeof(int));
+	all_records++;
+	memcpy(first_block_info + offset, &all_records,sizeof(int));
+	/* Set dirty and unpin */
 	BF_Block_SetDirty(first_block);
 	BF_UnpinBlock(first_block);
 	BF_Block_Destroy(&first_block);
-
+	printf("insert ok!\n");
 	return AME_OK;
 }
