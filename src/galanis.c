@@ -35,8 +35,8 @@ void AM_Init() {
 		printf("Memory exhausted!\n");
 		return;
 	}
-	for (int i = 0; i < MAX_OPEN_SCANS; ++i) {
-		Scans->open[i].file_index = NULL;
+	for (int i = 0; i < MAX_SCAN_FILES; ++i) {
+		Scans->open[i].file_index = EMPTY;
 	}
 	Scans->total = 0;
 }
