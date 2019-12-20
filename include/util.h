@@ -91,6 +91,8 @@ Open_Scans* Scans;
 
 /* Function headers definition */
 int find_empty_index();
+int find_empty_scan();
 int find_index(int fileDesc);
+int find_scan(int fileDesc);
 char* concat(const char *s1, const char *s2);
 int compare(void *op1, int op, void *op2, char type);
