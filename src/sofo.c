@@ -12,6 +12,8 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 		At first check if type and length fields match each other. Otherwise do not
 		create any AM file
 	*/
+	CALL_OR_DIE(type_length_match(attrType1, attrLength1));
+	CALL_OR_DIE(type_length_match(attrType2, attrLength2));
 
 	int offset;
 	/* Create the file */
@@ -29,72 +31,59 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
   BF_GetBlockCounter(fileDesc, &blocks_num);
   /* Get access to the first block */
   BF_GetBlock(fileDesc, blocks_num - 1, first_block);
-	/* Find out if we have a wrong input */
-	int ok_a = ((attrType1 == 'c' && attrLength1 >= 1 && attrLength1 <= 255) ||
-							(attrType1 == 'i' && attrLength1 == 4) ||
-							(attrType1 == 'f' && attrLength1 == 4));
 
-	int ok_b = ((attrType2 == 'c' && attrLength2 >= 1 && attrLength2 <= 255) ||
-							(attrType2 == 'i' && attrLength2 == 4) ||
-							(attrType2 == 'f' && attrLength2 == 4));
-	/*if there are no errors*/
-	if ((ok_a == 1) && (ok_b == 1)) {
-	  /* Set its data to be the character 'B', so we can recognize the B+ files */
-	  char* first_block_info = BF_Block_GetData(first_block);
-	  char idf = 'B';
-	  memcpy(first_block_info, &idf, sizeof(char));
+  /* Set its data to be the character 'B', so we can recognize the B+ files */
+  char* first_block_info = BF_Block_GetData(first_block);
+  char idf = 'B';
+  memcpy(first_block_info, &idf, sizeof(char));
 
-	  /* Also, store the total number of records in the file */
-	  int init_no_records = 0;
-		/* Initialize our offset */
-		offset = sizeof(char);
-	  memcpy(first_block_info + offset, &init_no_records, sizeof(int));
+  /* Also, store the total number of records in the file */
+  int init_no_records = 0;
+	/* Initialize our offset */
+	offset = sizeof(char);
+  memcpy(first_block_info + offset, &init_no_records, sizeof(int));
 
-	  /* Also, store the block that the root is in */
-	  int root_block_no = -1;
-		offset = sizeof(char) + sizeof(int);
-	  memcpy(first_block_info + offset, &root_block_no, sizeof(int));
+  /* Also, store the block that the root is in */
+  int root_block_no = -1;
+	offset = sizeof(char) + sizeof(int);
+  memcpy(first_block_info + offset, &root_block_no, sizeof(int));
 
-	  /* Also, max pointers of index and max records of a block */
-		/* If we have a string as a key, inrease its length by 1 to store the \0 */
-		int attrLength1new;
-		if (attrType1 == 'c') {
-			attrLength1new = attrLength1 + 1; // \O
-		}
-		else {
-			attrLength1new = attrLength1;
-		}
-    /* the following math occur from the metadata that we must store */
-	  int max_index_keys = ((BF_BLOCK_SIZE - 2 * sizeof(int) - sizeof(char)) / (attrLength1new + sizeof(int)));
-	  int max_records_block = (BF_BLOCK_SIZE - 3 * sizeof(int) - sizeof(char)) / sizeof(Record);
-		offset = sizeof(char) + 2 * sizeof(int);
-	  memcpy(first_block_info + offset, &max_index_keys, sizeof(int));
-		offset = sizeof(char) + 3 * sizeof(int);
-	  memcpy(first_block_info + offset, &max_records_block, sizeof(int));
-
-	  /* Also the attr1 and it's length , and attr2 and it's length */
-		/* a */
-		offset = sizeof(char) + 4 * sizeof(int);
-		memcpy(first_block_info + offset, &attrType1, sizeof(char));
-		offset = 2 * sizeof(char) + 4 * sizeof(int);
-		memcpy(first_block_info +  offset, &attrLength1new, sizeof(int));
-		/* b */
-		offset = 2 * sizeof(char) + 5 * sizeof(int);
-		memcpy(first_block_info + offset , &attrType2, sizeof(char));
-		int attrLength2new;
-		if (attrType2 == 'c') {
-			attrLength2new = attrLength2 + 1;
-		}
-		else {
-			attrLength2new = attrLength2;
-		}
-		offset = 3 * sizeof(char) + 5 * sizeof(int);
-		memcpy(first_block_info + offset , &attrLength2new, sizeof(char));
+  /* Also, max pointers of index and max records of a block */
+	/* If we have a string as a key, inrease its length by 1 to store the \0 */
+	int attrLength1new;
+	if (attrType1 == 'c') {
+		attrLength1new = attrLength1 + 1; // \O
 	}
 	else {
-		return -1; //TODO: Return error
-  }
-	//TODO change the n and n+1 for max
+		attrLength1new = attrLength1;
+	}
+  /* the following math occur from the metadata that we must store */
+  int max_index_keys = ((BF_BLOCK_SIZE - 2 * sizeof(int) - sizeof(char)) / (attrLength1new + sizeof(int)));
+  int max_records_block = (BF_BLOCK_SIZE - 3 * sizeof(int) - sizeof(char)) / sizeof(Record);
+	offset = sizeof(char) + 2 * sizeof(int);
+  memcpy(first_block_info + offset, &max_index_keys, sizeof(int));
+	offset = sizeof(char) + 3 * sizeof(int);
+  memcpy(first_block_info + offset, &max_records_block, sizeof(int));
+
+  /* Also the attr1 and it's length , and attr2 and it's length */
+	/* a */
+	offset = sizeof(char) + 4 * sizeof(int);
+	memcpy(first_block_info + offset, &attrType1, sizeof(char));
+	offset = 2 * sizeof(char) + 4 * sizeof(int);
+	memcpy(first_block_info +  offset, &attrLength1new, sizeof(int));
+	/* b */
+	offset = 2 * sizeof(char) + 5 * sizeof(int);
+	memcpy(first_block_info + offset , &attrType2, sizeof(char));
+	int attrLength2new;
+	if (attrType2 == 'c') {
+		attrLength2new = attrLength2 + 1;
+	}
+	else {
+		attrLength2new = attrLength2;
+	}
+	offset = 3 * sizeof(char) + 5 * sizeof(int);
+	memcpy(first_block_info + offset , &attrLength2new, sizeof(char));
+
   /* We've changed the block data, so its dirty */
   BF_Block_SetDirty(first_block);
   /* Unpin the block from the memory */
