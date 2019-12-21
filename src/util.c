@@ -37,16 +37,39 @@ int find_scan(int fileDesc) {
 }
 
 char* concat(const char *s1, const char *s2) {
-    char* result = malloc(strlen(s1) + strlen(s2) + 1);
-    strcpy(result, s1);
-    strcat(result, s2);
-    return result;
+  char* result = malloc(strlen(s1) + strlen(s2) + 1);
+  strcpy(result, s1);
+  strcat(result, s2);
+  return result;
+}
+
+int type_length_match(char type, int length) {
+  switch(type) {
+    case INTEGER:
+      if (length != 4) {
+        return AME_INTEGER_ERR;
+      }
+      break;
+    case FLOAT:
+      if (length != 4) {
+        return AME_FLOAT_ERR;
+      }
+      break;
+    case STRING:
+      if (length < 1 || length > 255 ) {
+			  return AME_STRING_ERR;
+			}
+			break;
+    default:
+      return AME_TYPE_ERR;
+  }
+  return AME_OK;
 }
 
 int compare(void *op1, int op, void *op2, char type){
-	switch(type){
+	switch (type) {
 		case INTEGER:
-			switch(op){
+			switch (op) {
 				case EQUAL:
 					return (*((int *)op1) == *((int *)op2));
 				case NOT_EQUAL:
@@ -64,7 +87,7 @@ int compare(void *op1, int op, void *op2, char type){
 			}
 			break;
 		case FLOAT:
-			switch(op){
+			switch (op) {
 				case EQUAL:
 					return (*((float *)op1) == *((float *)op2));
 				case NOT_EQUAL:
@@ -83,7 +106,7 @@ int compare(void *op1, int op, void *op2, char type){
 			break;
 		case STRING:;
 			int result = strcmp(((char *)op1), ((char *)op2));
-			switch(op){
+			switch (op) {
 				case EQUAL:
 					return (result == 0);
 				case NOT_EQUAL:

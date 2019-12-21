@@ -1,6 +1,9 @@
 #ifndef AM_H_
 #define AM_H_
 
+/* Global variable for errors */
+int AME_errno;
+
 /* Error codes */
 #define AME_OK 0
 #define AME_EOF -1
@@ -8,7 +11,11 @@
 #define AME_MEM_ERR -3
 #define AME_MAX_FILES_ERR -4
 #define AME_MAX_SCANS_ERR -5
-#define AME_TYPE_ERR -6
+#define AME_INTEGER_ERR -6
+#define AME_FLOAT_ERR -7
+#define AME_STRING_ERR -8
+#define AME_TYPE_ERR -9
+
 
 #define EQUAL 1
 #define NOT_EQUAL 2

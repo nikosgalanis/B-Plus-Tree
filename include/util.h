@@ -57,7 +57,6 @@ typedef struct {
 /* Global variables definition */
 Open_Files* Files;
 Open_Scans* Scans;
-int AME_errno;
 
 /* Macro instructions for error catching */
 #define CALL_BF(call)         \
@@ -71,7 +70,7 @@ int AME_errno;
 #define CALL_OR_DIE(call)       \
 {                               \
   int code = call;              \
-  if (code != AMΕ_OK) {         \
+  if (code != AME_OK) {         \
     AME_errno = code;           \
     return code;                \
   }                             \
