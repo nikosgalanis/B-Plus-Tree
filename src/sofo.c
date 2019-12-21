@@ -161,7 +161,6 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	 else {
 		 printf("need to split\n");
 		 append = split_data_block(fileDesc, target_block_index, new_record, key_type, key_size);
-
 	 }
 	/** while there are still index blocks in the stack (aka we have not reached
 		  the root) */
@@ -185,6 +184,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 		}
 		/*If we have reached the root */
 		if (target_block_index == root_block_int) {
+			printf("aaaaaaaaaaaaaaaaaaaaaaaaa\n");
 			/* re-gain access to the 1st block */
 			BF_GetBlock(fileDesc, 0, first_block);
 			first_block_info = BF_Block_GetData(first_block);
@@ -207,6 +207,11 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	BF_Block_SetDirty(first_block);
 	BF_UnpinBlock(first_block);
 	BF_Block_Destroy(&first_block);
+	BF_Block* index;
+	BF_Block_Init(&index);
+	BF_GetBlock(fileDesc, 1, index);
+	char* ind_data = BF_Block_GetData(index);
+	printf("should be  %c\n",ind_data[0] );
 	printf("insert ok!\n");
 	return AME_OK;
 }

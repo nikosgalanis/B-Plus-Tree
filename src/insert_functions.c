@@ -257,11 +257,10 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 	BF_Block_Init(&first_block);
 	BF_GetBlock(fileDesc, 0, first_block);
 	char* first_block_info = BF_Block_GetData(first_block);
-	int	offset = sizeof(char) + sizeof(int);
+	int	offset = sizeof(char) + 2 * sizeof(int);
 	/* Get the max possible keys in a data block */
 	int max_keys;
 	memcpy(&max_keys, first_block_info + offset, sizeof(int));
-	printf("max keys is %d\n",max_keys );
   BF_UnpinBlock(first_block);
 	BF_Block_Destroy(&first_block);
 	/*Initialize a pointer to the block we want to insert */
@@ -287,15 +286,15 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 		return false;
   }
   int pos = 0;
-	void* key_to_insert;
+	void* key_to_insert = malloc(key_size);
 	memcpy(key_to_insert, new_tuple + sizeof(int), key_size);
 	/* Traverse all the current keys */
 	for (int i = 0; i < total_keys; ++i) {
 		char* curr_tuple = malloc(2 * sizeof(int) + key_size);
 		memcpy(curr_tuple, data + offset, 2 * sizeof(int) + key_size);
-		void* curr_key;
+		void* curr_key = malloc(key_size);
 		memcpy(curr_key, curr_tuple + sizeof(int), key_size);
-
+		printf("curr key %d\n", *(int*)curr_key);
 		/* If the key of the keys we want to insert is smaller than the current one */
 		if (compare(key_to_insert, LESS_THAN, curr_key, key_type)) {
 			/* Shift all keys to the right to create space */
@@ -326,7 +325,6 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 
 /* !!!!SOS!!!! If we ever get shit data into a data block, the error will be in here */
 char* split_data_block(int fileDesc, int block_num, Record* new_record, char key_type, int key_size) {
-	printf("split sttttttttttttttttttttttarting\n");
 	/* Initialize a pointer to the block */
   BF_Block* block;
   BF_Block_Init(&block);
@@ -337,8 +335,6 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   /* Get the total records that the block contains*/
   int total_records;
   memcpy(&total_records, block_info + sizeof(char), sizeof(int));
-	printf("total_records %d\n",total_records );
-  print_data_block(fileDesc,block_num);
   /* Get the position that we want to split. */
   int split_pos = total_records / 2;
   /* If the key we want to insert is grater than the key of the middle record of
@@ -361,7 +357,6 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   /* Save its info: the fact that is a data block + the amount of records we are
     going to insert */
   char type = 'D'; int init_records = total_records - split_pos;
-	printf("init_records %d\n", init_records);
   memcpy(new_block_data, &type, sizeof(char));
   memcpy(new_block_data + sizeof(char), &init_records, sizeof(int));
 
@@ -404,25 +399,20 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
     new_block_num--;
     data_sorted_insert(new_block_num, fileDesc, new_record, key_type);
   }
-  print_data_block(fileDesc,3);
-  print_data_block(fileDesc,4);
 	/* We want to return the key of the first record of the left block, and the
 		 two pointers surrounding it */
 	char* to_return = malloc(new_record->size + 2 * sizeof(int));
 	memcpy(to_return, &block_num, sizeof(int));
 	offset = 3 * sizeof(int) + sizeof(char);
 	//memcpy(to_return + sizeof(int), new_block_data + offset, key_size);
-	Record* print1 = malloc(new_record->size);
-	memcpy(print1, new_block_data + offset, new_record->size);
-  memcpy(to_return + sizeof(int), print1->key, key_size);
-	// printf(" TO PROVLIMA EINAI EDW!!!!!!!!!!!!!!!!!  %d\n", *((int*)print1->key));
-  printf(" TO PROVLIMA den EINAI EDW!!!!!!!!!!!!!!!!!  %d\n", *(to_return + sizeof(int)));
+	Record* rec_to_return = malloc(new_record->size);
+	memcpy(rec_to_return, new_block_data + offset, new_record->size);
+  memcpy(to_return + sizeof(int), rec_to_return->key, key_size);
 	/* Call BF_GetBlockCounter to find the number of the newly allocated block */
 	int new_block_num;
 	BF_GetBlockCounter(fileDesc, &new_block_num);
 	new_block_num--;
 	memcpy(to_return + sizeof(int) + key_size, &new_block_num, sizeof(int));
-  printf("To return %d %d %d\n", *(to_return),*(to_return + sizeof(int)),*(to_return + 2* sizeof(int)));
   /* Set the previously edited blocks dirty, and unpin the, from the memory */
   BF_Block_SetDirty(block);
   BF_Block_SetDirty(new_block);
