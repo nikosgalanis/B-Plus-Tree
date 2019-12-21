@@ -371,6 +371,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   offset += 2 * sizeof(int);
   memcpy(&old_next, block_info + offset, sizeof(int));
   memcpy(block_info + offset, &next, sizeof(int));
+	offset += sizeof(int);
   /* the previous block of the new one, is the one that we got as an argument */
   prev = block_num;
   next = old_next;
@@ -379,7 +380,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   new_block_offset += sizeof(int);
   memcpy(new_block_data + new_block_offset, &next, sizeof(int));
   new_block_offset += sizeof(int);
-  offset += sizeof(int) + split_pos * new_record->size;
+  offset += split_pos * new_record->size;
 
   /* Copy the data from the full block to the empty, so we have two half-full
   data blocks */
@@ -408,9 +409,9 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
 	memcpy(to_return, &block_num, sizeof(int));
 	offset = 3 * sizeof(int) + sizeof(char);
 	memcpy(to_return + sizeof(int), new_block_data + offset, key_size);
-	void* print1;
+	void* print1 = malloc(key_size);
 	memcpy(print1, new_block_data + offset, key_size);
-	printf("!!!!!!!!!!!!!!!!!  %d\n", *((int*)print1));
+	printf(" TO PROVLIMA EINAI EDW!!!!!!!!!!!!!!!!!  %d\n", *((int*)print1));
 	/* Call BF_GetBlockCounter to find the number of the newly allocated block */
 	int new_block_num;
 	BF_GetBlockCounter(fileDesc, &new_block_num);
