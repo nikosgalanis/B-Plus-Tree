@@ -338,6 +338,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   int total_records;
   memcpy(&total_records, block_info + sizeof(char), sizeof(int));
 	printf("total_records %d\n",total_records );
+  print_data_block(fileDesc,block_num);
   /* Get the position that we want to split. */
   int split_pos = total_records / 2;
   /* If the key we want to insert is grater than the key of the middle record of
@@ -403,21 +404,25 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
     new_block_num--;
     data_sorted_insert(new_block_num, fileDesc, new_record, key_type);
   }
+  print_data_block(fileDesc,3);
+  print_data_block(fileDesc,4);
 	/* We want to return the key of the first record of the left block, and the
 		 two pointers surrounding it */
 	char* to_return = malloc(new_record->size + 2 * sizeof(int));
 	memcpy(to_return, &block_num, sizeof(int));
 	offset = 3 * sizeof(int) + sizeof(char);
-	memcpy(to_return + sizeof(int), new_block_data + offset, key_size);
-	void* print1 = malloc(key_size);
-	memcpy(print1, new_block_data + offset, key_size);
-	printf(" TO PROVLIMA EINAI EDW!!!!!!!!!!!!!!!!!  %d\n", *((int*)print1));
+	//memcpy(to_return + sizeof(int), new_block_data + offset, key_size);
+	Record* print1 = malloc(new_record->size);
+	memcpy(print1, new_block_data + offset, new_record->size);
+  memcpy(to_return + sizeof(int), print1->key, key_size);
+	// printf(" TO PROVLIMA EINAI EDW!!!!!!!!!!!!!!!!!  %d\n", *((int*)print1->key));
+  printf(" TO PROVLIMA den EINAI EDW!!!!!!!!!!!!!!!!!  %d\n", *(to_return + sizeof(int)));
 	/* Call BF_GetBlockCounter to find the number of the newly allocated block */
 	int new_block_num;
 	BF_GetBlockCounter(fileDesc, &new_block_num);
 	new_block_num--;
 	memcpy(to_return + sizeof(int) + key_size, &new_block_num, sizeof(int));
-
+  printf("To return %d %d %d\n", *(to_return),*(to_return + sizeof(int)),*(to_return + 2* sizeof(int)));
   /* Set the previously edited blocks dirty, and unpin the, from the memory */
   BF_Block_SetDirty(block);
   BF_Block_SetDirty(new_block);

@@ -182,7 +182,10 @@ boolean print_data_block(int fileDesc, int target_block) {
 	int i;
 	Record* cur_record = malloc(size);
 	offset = sizeof(char) + 3 * sizeof(int);
-	printf("block %d with %d records: ",target_block, block_records);
+	int prev,next;
+	memcpy(&prev, block_data + sizeof(char) + sizeof(int), sizeof(int));
+	memcpy(&next, block_data + sizeof(char) + 2 * sizeof(int), sizeof(int));
+	printf("block %d with %d records, prev %d, next %d : ",target_block, block_records,prev,next);
 	int thekey,thevalue;
 	for (i = 0; i < block_records; i++) {
 		memcpy(cur_record, block_data + offset, size);
