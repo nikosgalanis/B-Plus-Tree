@@ -275,7 +275,7 @@ boolean print_index_block(int fileDesc, int target_block){
 	printf("block %d with %d keys: ",target_block, block_keys);
 	int block_pointer;
 	memcpy(&block_pointer, block_data + offset, sizeof(int));
-	printf("|%d | ", block_pointer);
+	printf("|%d|", block_pointer);
 	offset += sizeof(int);
 	int i;
 	void* key;
@@ -286,15 +286,15 @@ boolean print_index_block(int fileDesc, int target_block){
 		switch (type1) {
 			case 'i':
 				// printf("hoho3\n");
-				printf("| %d | ",key);
+				printf("| %d |",key);
 				// printf("hoho2\n");
 				break;
 			case 'f':
-				printf("| %f | ",*((float*)key));
+				printf("| %f |",*((float*)key));
 				break;
 			case 'c':
 
-				printf("| %s | ",(char*)key);
+				printf("| %s |",(char*)key);
 				break;
 			default:
 				printf("error type\n");
@@ -307,7 +307,7 @@ boolean print_index_block(int fileDesc, int target_block){
 		}
 		offset += attrLength1;
 		memcpy(&block_pointer, block_data + offset, sizeof(int));
-		printf("|%d | ", block_pointer);
+		printf("|%d|", block_pointer);
 		offset += sizeof(int);
 	}
 	printf("\n");
