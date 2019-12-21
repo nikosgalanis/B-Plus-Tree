@@ -72,7 +72,7 @@ Open_Scans* Scans;
 {                               \
   int code = call;              \
   if (code != AME_OK) {         \
-    AME_errno = code;           \
+    AM_errno = code;           \
     return code;                \
   }                             \
 }

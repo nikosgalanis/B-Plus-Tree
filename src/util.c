@@ -141,7 +141,6 @@ boolean print_data_block(int fileDesc, int target_block) {
 	char* first_block_info = BF_Block_GetData(first_block);
 	char* block_data = BF_Block_GetData(block);
 	/*check if data block*/
-	printf("%c", block_data[0]);
 	if (block_data[0] != 'D'){
 		printf("That's not a data block\n");
 		BF_UnpinBlock(block);
@@ -153,8 +152,8 @@ boolean print_data_block(int fileDesc, int target_block) {
 	/*check if the records are as many as we want*/
 	memcpy(&max_records, first_block_info + sizeof(char) + 3 * sizeof(int), sizeof(int));
 	memcpy(&block_records, block_data + sizeof(char), sizeof(int));
-	if (max_records <= block_records) {
-		printf("Error in records\n");
+	if (max_records < block_records) {
+		printf("Error in records,max records are %d, this block has%d\n",max_records,block_records);
 		BF_UnpinBlock(block);
 		BF_Block_Destroy(&block);
 		BF_UnpinBlock(first_block);
@@ -181,61 +180,56 @@ boolean print_data_block(int fileDesc, int target_block) {
 	/*Now let's print the records*/
 	size = sizeof(Record) + attrLength1 + attrLength2;
 	int i;
-	Record* cur_record;
+	Record* cur_record = malloc(size);
 	offset = sizeof(char) + 3 * sizeof(int);
 	printf("block %d with %d records: ",target_block, block_records);
 	int thekey,thevalue;
-	// for (i = 0; i < block_records; i++) {
-	// 	printf("size %d\n",size);
-	// 	memcpy(&cur_record, block_data + offset, size);
-	// 	printf("Record %d [ ",i);
-	// 	switch (type1) {
-	// 		case 'i':
-	// 			thekey = (int) cur_record->key;
-	// 			printf("%d ",thekey);
-	// 			//  printf("%d ",cur_record->key);
-	// 			break;
-	// 		case 'f':
-	// 			printf("%f ",*((float *)cur_record->key));
-	// 			break;
-	// 		case 'c':
-	// 			printf("%s ",*((char* *)cur_record->key));
-	// 			break;
-	// 		default:
-	// 			printf("error type\n");
-	// 			BF_UnpinBlock(block);
-	// 			BF_Block_Destroy(&block);
-	// 			BF_UnpinBlock(first_block);
-	// 			BF_Block_Destroy(&first_block);
-	// 			return false;
-	// 			break;
-	// 	}
-	// 	printf("| ");
-	// 	switch (type2) {
-	// 		case 'i':
-	// 			// printf("%d ",*( (int *) cur_record->value));
-	// 			thevalue = (int) cur_record->value;
-	// 			printf("%d ",thevalue);
-	// 			break;
-	// 		case 'f':
-	// 			printf("%f ",*( (float *) cur_record->value));
-	// 			break;
-	// 		case 'c':
-	// 			printf("%s ",*( (char* *) cur_record->value));
-	// 			break;
-	// 		default:
-	// 			printf("error type\n");
-	// 			BF_UnpinBlock(block);
-	// 			BF_Block_Destroy(&block);
-	// 			BF_UnpinBlock(first_block);
-	// 			BF_Block_Destroy(&first_block);
-	// 			return false;
-	// 			break;
-	// 	}
-	// 	printf("] ");
-	// 	/*next record*/
-	// 	offset += size;
-	// }
+	for (i = 0; i < block_records; i++) {
+		memcpy(cur_record, block_data + offset, size);
+		printf("Record %d [ ",i);
+		switch (type1) {
+			case 'i':
+				printf("%d ",*((int*) cur_record->key));
+				break;
+			case 'f':
+				printf("%f ",*((float *)cur_record->key));
+				break;
+			case 'c':
+				printf("%s ",(char*) cur_record->key);
+				break;
+			default:
+				printf("error type\n");
+				BF_UnpinBlock(block);
+				BF_Block_Destroy(&block);
+				BF_UnpinBlock(first_block);
+				BF_Block_Destroy(&first_block);
+				return false;
+				break;
+		}
+		printf("| ");
+		switch (type2) {
+			case 'i':
+				printf("%d ",*( (int *) cur_record->value));
+				break;
+			case 'f':
+				printf("%f ",*( (float *) cur_record->value));
+				break;
+			case 'c':
+				printf("%s ",(char*) cur_record->value);
+				break;
+			default:
+				printf("error type\n");
+				BF_UnpinBlock(block);
+				BF_Block_Destroy(&block);
+				BF_UnpinBlock(first_block);
+				BF_Block_Destroy(&first_block);
+				return false;
+				break;
+		}
+		printf("] ");
+		/*next record*/
+		offset += size;
+	}
 	printf("\n");
 
 	/*Unpin destroy*/
@@ -269,7 +263,7 @@ boolean print_index_block(int fileDesc, int target_block){
 	/*check if the keys are as many as we want*/
 	memcpy(&max_keys, first_block_info + sizeof(char) + 2 * sizeof(int), sizeof(int));
 	memcpy(&block_keys, block_data + sizeof(char), sizeof(int));
-	if (max_keys <= block_keys) {
+	if (max_keys < block_keys) {
 		printf("Error in keys\n");
 		BF_UnpinBlock(block);
 		BF_Block_Destroy(&block);
@@ -301,19 +295,20 @@ boolean print_index_block(int fileDesc, int target_block){
 	void* key;
 	int thekey ;
 	for (i = 0; i < block_keys; i++) {
-		memcpy(&key ,block_data + offset, attrLength1);
-		// printf("%d\n", key);
 		switch (type1) {
 			case 'i':
-				// printf("hoho3\n");
-				printf("| %d |",key);
-				// printf("hoho2\n");
+				key = malloc(attrLength1);
+				memcpy(key ,block_data + offset, attrLength1);
+				printf("| %d |",*((int *)key));
 				break;
 			case 'f':
+				key = malloc(attrLength1);
+				memcpy(key ,block_data + offset, attrLength1);
 				printf("| %f |",*((float*)key));
 				break;
 			case 'c':
-
+				key = (char*) malloc(attrLength1);
+				memcpy(key ,block_data + offset, attrLength1);
 				printf("| %s |",(char*)key);
 				break;
 			default:
@@ -362,6 +357,8 @@ boolean print_tree(int fileDesc, char print_type) {
 	char* cur_block_info = BF_Block_GetData(cur_block);
 	/*if we want to print index blocks*/
 	if (print_type == 'I'){
+		printf("---------------------------------------------------------------------\n");
+		printf("Printing the index tree PRE-ORDER\n");
 		/*need keylenght*/
 	 	int key_size;
 		offset = 2 * sizeof(char) + 4 * sizeof(int);
@@ -392,7 +389,6 @@ boolean print_tree(int fileDesc, char print_type) {
 			cur_block_info = BF_Block_GetData(cur_block);
 			memcpy(&left,cur_block_info + sizeof(char) + sizeof(int),sizeof(int));
 			memcpy(&right,cur_block_info + sizeof(char)+ 2 * sizeof(int) + key_size, sizeof(int));
-
 			if (right != -1 ) {
 				Push(s,right);
 			}
@@ -400,9 +396,12 @@ boolean print_tree(int fileDesc, char print_type) {
 				Push(s,left);
 			}
 		}
+		printf("---------------------------------------------------------------------\n");
 	}
 	/*if we want to print data blocks*/
 	else if (print_type == 'D') {
+		printf("---------------------------------------------------------------------\n");
+		printf("Printing the data blocks!\n");
 		/*while we are not in data blocks*/
 		while (cur_block_info[0] != 'D') {
 			memcpy(&cur_block_index, cur_block_info + sizeof(char) + sizeof(int), sizeof(int));
@@ -424,9 +423,7 @@ boolean print_tree(int fileDesc, char print_type) {
 		}
 		offset += sizeof(int);
 		memcpy(&next, cur_block_info + offset, sizeof(int));
-		printf("hey0\n");
 		print_data_block(fileDesc,cur_block_index);
-		printf("hey1\n");
 		while (next != -1) {
 			/*print data of next*/
 			print_data_block(fileDesc,next);
@@ -437,7 +434,7 @@ boolean print_tree(int fileDesc, char print_type) {
 			cur_block_info = BF_Block_GetData(cur_block);
 			memcpy(&next, cur_block_info + offset, sizeof(int));
 		}
-		printf("hey2\n");
+		printf("---------------------------------------------------------------------\n");
 	}
 	else {
 		printf("print_type error\n");

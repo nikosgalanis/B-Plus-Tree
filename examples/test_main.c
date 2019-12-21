@@ -16,15 +16,11 @@ int main(void) {
   if ((eNentry = AM_OpenIndex("data.db")) < 0) {
     AM_PrintError("Errror");
   }
-  int k1 = 1, k2 = 2, k3 = 3, k4 = 4;
-  int v1 = 1, v2 = 2, v3 = 3, v4 = 4;
-  AM_InsertEntry(eNentry, (void*)&v1, (void*)&k1);
-  printf("----------------------\n");
-  AM_InsertEntry(eNentry, (void*)&v2, (void*)&k2);
-  printf("----------------------\n");
-  AM_InsertEntry(eNentry, (void*)&v4, (void*)&k4);
-  printf("----------------------\n");
-  AM_InsertEntry(eNentry, (void*)&v3, (void*)&k3);
+  for(int i = 0; i < 20; ++i) {
+    int v1 = i, k1 = i;
+    printf("--------Inserting %d --------------\n",i );
+    AM_InsertEntry(eNentry, (void*)&v1, (void*)&k1);
+  }
   print_tree(eNentry, 'D');
   print_tree(eNentry, 'I');
 }

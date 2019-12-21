@@ -51,15 +51,22 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
   /* Also, max pointers of index and max records of a block */
 	/* If we have a string as a key, inrease its length by 1 to store the \0 */
 	int attrLength1new;
+	int attrLength2new;
 	if (attrType1 == 'c') {
 		attrLength1new = attrLength1 + 1; // \O
 	}
 	else {
 		attrLength1new = attrLength1;
 	}
+	if (attrType2 == 'c') {
+		attrLength2new = attrLength2 + 1;
+	}
+	else {
+		attrLength2new = attrLength2;
+	}
   /* the following math occur from the metadata that we must store */
   int max_index_keys = ((BF_BLOCK_SIZE - 2 * sizeof(int) - sizeof(char)) / (attrLength1new + sizeof(int)));
-  int max_records_block = (BF_BLOCK_SIZE - 3 * sizeof(int) - sizeof(char)) / sizeof(Record);
+  int max_records_block = (BF_BLOCK_SIZE - 3 * sizeof(int) - sizeof(char)) / (sizeof(Record) + attrLength1new + attrLength2new);
 	offset = sizeof(char) + 2 * sizeof(int);
   memcpy(first_block_info + offset, &max_index_keys, sizeof(int));
 	offset = sizeof(char) + 3 * sizeof(int);
@@ -74,13 +81,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 	/* b */
 	offset = 2 * sizeof(char) + 5 * sizeof(int);
 	memcpy(first_block_info + offset , &attrType2, sizeof(char));
-	int attrLength2new;
-	if (attrType2 == 'c') {
-		attrLength2new = attrLength2 + 1;
-	}
-	else {
-		attrLength2new = attrLength2;
-	}
+
 	offset = 3 * sizeof(char) + 5 * sizeof(int);
 	memcpy(first_block_info + offset , &attrLength2new, sizeof(char));
 
@@ -131,6 +132,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	 char* append = malloc(new_record->size);
 	 memcpy(append, new_record, new_record->size);
 	 /* Pop the first element from the queue. It will be a data block */
+	 printf("here\n");
 	 int target_block_index = Pop(path);
 	 printf("target is %d\n",target_block_index);
 	 /* If there is enough room in that data block */
@@ -157,20 +159,21 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	 /** If there is no more room, split the block into 2, so the both can hold
 	 		 more records */
 	 else {
+		 printf("need to split\n");
 		 append = split_data_block(fileDesc, target_block_index, new_record, key_type, key_size);
 
 	 }
-
 	/** while there are still index blocks in the stack (aka we have not reached
 		  the root) */
 	while (! Empty(path)) {
-		//TODO check stack.c
 		/* Pop the upeer level */
 		target_block_index = Pop(path);
+		printf("path not empty\n");
 		/* if there is room for the extra key in that index block */
 		if (key_fits_index(fileDesc, target_block_index)) {
 			/* Insert it there */
 			index_sorted_insert(target_block_index, fileDesc, append, key_type, key_size);
+			printf("should print this\n" );
 			/* and break the loop */
 			break;
 		}
