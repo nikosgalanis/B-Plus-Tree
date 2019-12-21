@@ -22,4 +22,4 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 boolean record_fits_data(int fileDesc, int target_block_index);
 boolean key_fits_index(int fileDesc, int target_block_index);
 
-Stack* find_data_block(int fileDesc, int root_num, void *key);
+Stack* find_data_block(int fileDesc, int root_num, void *key, char key_type, int key_size);

@@ -46,7 +46,7 @@ int create_root(int fileDesc, char* append) {
 
   /* key to a new variable */
   /* Create root block */
-  int root_block_index = -1;
+  int root_block_index;
   int blocks_num;
   BF_Block_Init(&root_block);
   BF_AllocateBlock(fileDesc, root_block);
@@ -571,93 +571,60 @@ boolean key_fits_index(int fileDesc, int target_block_index) {
 	return fits;
 }
 
-Stack* find_data_block(int fileDesc, int root_num, void *key) {
-  /* Initialize a stack to keep our path*/
-  Stack* path = InitializeStack();
-  /* Initialize a pointer to a block */
-  BF_Block* first_block;
-  BF_Block_Init(&first_block);
-  /* Get access to the data of the very first block */
-  BF_GetBlock(fileDesc, 0, first_block);
-  /* Get access to its data */
-  char* first_block_info = BF_Block_GetData(first_block);
-  /* Get the attribute type of key */
-  char key_type;
-  memcpy(&key_type, first_block_info + sizeof(char) + 4 * sizeof(int), sizeof(char));
-  /* Get size of key */
-  size_t key_size;
-  switch (key_type) {
-    case INTEGER:
-      key_size = sizeof(int);
-      break;
-    case FLOAT:
-      key_size = sizeof(float);
-      break;
-    case STRING:
-      key_size = sizeof((strlen((char *)key) - 1));
-      break;
-  }
-  /* Unpin and destroy block */
-  BF_UnpinBlock(first_block);
-  BF_Block_Destroy(&first_block);
-  /* Initialize a new block */
-  BF_Block* block;
-  BF_Block_Init(&block);
-  /* Starting from the root */
-  int block_num = root_num;
-	printf("The root is %d\n",root_num);
-  char block_idf;
-  int no_indxs;
-  void *block_key;
-	char* block_info;
+Stack* find_data_block(int fileDesc, int root_num, void* key, char key_type, int key_size) {
+	/* Initialize a stack to keep our path*/
+	Stack* path = InitializeStack();
+	/* Initialize a new block */
+	BF_Block* block;
+	BF_Block_Init(&block);
+	/* Starting from the root */
+	int block_num = root_num;
+	char block_idf;
 	do {
-    BF_GetBlock(fileDesc, block_num, block);
+		BF_GetBlock(fileDesc, block_num, block);
 		printf("Going to block_num %d\n",block_num );
-    /* Push the block number to the stack */
+		/* Push the block number to the stack */
     Push(path, block_num);
-    /* Get block data */
-		block_info = BF_Block_GetData(block);
-    /* Get block identifier */
-    int block_offset = 0;
+		char* block_info = BF_Block_GetData(block);
+		/* Get block identifier */
+		int block_offset = 0;
 		memcpy(&block_idf, block_info, sizeof(char));
-    block_offset += sizeof(char);
-    /* Check if we are not in Index block */
-		printf("block idf %c\n", block_idf);
+		block_offset += sizeof(char);
 		if (block_idf == 'D') {
 			BF_UnpinBlock(block);
 			BF_Block_Destroy(&block);
-      return path;
-    }
-    /* Get number of indexes stored into the block */
-    memcpy(&no_indxs, block_info + block_offset, sizeof(int));
-    block_offset += sizeof(int);
+			return path;
+		}
+		/* Get number of indexes stored into the block */
+		int no_indxs;
+		memcpy(&no_indxs, block_info + block_offset, sizeof(int));
+		block_offset += sizeof(int);
 		printf("no indexes is %d\n",no_indxs);
 		boolean found = false;
-    for (int i = 0; i < no_indxs; ++i) {
-      /* surpass index to block */
-      block_offset += sizeof(int);
-      memcpy(block_key, block_info + block_offset, key_size);
-      /* Compare key with block key */
-      int result = compare(key, LESS_THAN_OR_EQUAL, block_key, key_type);
-      /* if given key <= block key go to corresponding block */
-      if (result) {
+		for (int i = 0; i < no_indxs; ++i) {
+			/* surpass index to block */
+			block_offset += sizeof(int);
+			void* block_key = malloc(key_size);
+			memcpy(block_key, block_info + block_offset, key_size);
+			/* Compare key with block key */
+			int result = compare(key, LESS_THAN_OR_EQUAL, block_key, key_type);
+			/* if given key <= block key go to corresponding block */
+			if (result) {
 				/* Update the found variable */
 				found = true;
-        /* Get corresponding index */
-        memcpy(&block_num, block_info + block_offset - key_size, sizeof(int));
-        /* Unpin index block */
-        BF_UnpinBlock(block);
+				/* Get corresponding index */
+				memcpy(&block_num, block_info + block_offset - key_size, sizeof(int));
+				/* Unpin index block */
+				BF_UnpinBlock(block);
 				/* Go one level down to the B+ tree */
 				break;
-      }
+			}
 			block_offset += key_size;
-    }
+		}
 		if (found == false) {
 			/* We reached the end of the index block, so visit the most right branch */
 			memcpy(&block_num, block_info + block_offset, sizeof(int));
 			BF_UnpinBlock(block);
 		}
-  } while (block_idf == 'I');
-
-  return path;
+	}	while (block_idf == 'I');
 }
