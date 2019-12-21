@@ -51,15 +51,22 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
   /* Also, max pointers of index and max records of a block */
 	/* If we have a string as a key, inrease its length by 1 to store the \0 */
 	int attrLength1new;
+	int attrLength2new;
 	if (attrType1 == 'c') {
 		attrLength1new = attrLength1 + 1; // \O
 	}
 	else {
 		attrLength1new = attrLength1;
 	}
+	if (attrType2 == 'c') {
+		attrLength2new = attrLength2 + 1;
+	}
+	else {
+		attrLength2new = attrLength2;
+	}
   /* the following math occur from the metadata that we must store */
   int max_index_keys = ((BF_BLOCK_SIZE - 2 * sizeof(int) - sizeof(char)) / (attrLength1new + sizeof(int)));
-  int max_records_block = (BF_BLOCK_SIZE - 3 * sizeof(int) - sizeof(char)) / (sizeof(Record) + attrLength1 + attrLength2);
+  int max_records_block = (BF_BLOCK_SIZE - 3 * sizeof(int) - sizeof(char)) / (sizeof(Record) + attrLength1new + attrLength2new);
 	offset = sizeof(char) + 2 * sizeof(int);
   memcpy(first_block_info + offset, &max_index_keys, sizeof(int));
 	offset = sizeof(char) + 3 * sizeof(int);
@@ -74,13 +81,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 	/* b */
 	offset = 2 * sizeof(char) + 5 * sizeof(int);
 	memcpy(first_block_info + offset , &attrType2, sizeof(char));
-	int attrLength2new;
-	if (attrType2 == 'c') {
-		attrLength2new = attrLength2 + 1;
-	}
-	else {
-		attrLength2new = attrLength2;
-	}
+
 	offset = 3 * sizeof(char) + 5 * sizeof(int);
 	memcpy(first_block_info + offset , &attrLength2new, sizeof(char));
 
