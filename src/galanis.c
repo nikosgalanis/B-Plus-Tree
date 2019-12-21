@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "../include/util.h"
 
-extern int AM_errno;
 #define AME_ERROR -1 //TODO: change this
-#define CHAR_SIZE 40
 
 void AM_Init() {
 	BF_Init(MRU);

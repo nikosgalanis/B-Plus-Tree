@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "../include/stack.h"
 
 Stack* InitializeStack(void) {

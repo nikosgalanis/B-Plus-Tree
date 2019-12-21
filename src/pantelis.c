@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../include/util.h"
 
-extern int AM_errno;
+#include "../include/util.h"
 
 int AM_OpenIndexScan(int fileDesc, int op, void *value) {
   /* Check if fileDesc is open. If not return corresponding error */

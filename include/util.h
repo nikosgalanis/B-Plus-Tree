@@ -88,6 +88,7 @@ typedef struct {
 /* Global variables definition */
 Open_Files* Files;
 Open_Scans* Scans;
+int AM_errno;
 
 /* Function headers definition */
 int find_empty_index();
@@ -96,6 +97,6 @@ int find_index(int fileDesc);
 int find_scan(int fileDesc);
 char* concat(const char *s1, const char *s2);
 int compare(void *op1, int op, void *op2, char type);
-boolean print_data_block(int fileDesc, int target_block); 
+boolean print_data_block(int fileDesc, int target_block);
 boolean print_index_block(int fileDesc, int target_block);
 boolean print_tree(int fileDesc, char print_type);

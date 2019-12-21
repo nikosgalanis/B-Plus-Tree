@@ -5,7 +5,6 @@
 #include "../include/insert_functions.h"
 
 #define AME_ERROR -1 //TODO: change this
-int AM_errno;
 
 int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 									 char attrType2,int attrLength2) {

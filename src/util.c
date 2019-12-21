@@ -4,7 +4,6 @@
 
 #include "../include/util.h"
 
-
 int find_empty_index() {
   for (int i = 0; i < MAX_OPEN_FILES; ++i) {
     if (Files->open[i].file_index == EMPTY)
@@ -269,7 +268,7 @@ boolean print_index_block(int fileDesc, int target_block){
 	offset = sizeof(char) + 4 * sizeof(int);
   	memcpy(&type1, first_block_info + offset, sizeof(char));
 	offset += sizeof(char);
-	memcpy(&attrLength1, first_block_info + offset, sizeof(int));	
+	memcpy(&attrLength1, first_block_info + offset, sizeof(int));
 	/*Now let's start printing*/
 	offset = sizeof(char) + sizeof(int);
 	printf("block %d with %d keys: ",target_block, block_keys);
