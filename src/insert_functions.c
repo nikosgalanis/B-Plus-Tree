@@ -387,7 +387,9 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
 
   /* Fill the rest of the first block with -1 values */
   memset(block_info + offset, -1, init_records * new_record->size);
-
+  /*set dirty before calling the other functions*/
+  BF_Block_SetDirty(block);
+  BF_Block_SetDirty(new_block);
   /*Manage the total records of each block accoridngly before inserting a new one*/
   /*Finally, add the new record in the correct block */
   if (right == 0) {
@@ -473,6 +475,9 @@ char* split_index_block(int fileDesc, int block_num, char* new_entry, char key_t
 	/** Set the remainder of the left block to have -1 values (nut also keep the
 		 	pointer stored at the end of the usefull data) */
 	memset(block_info + offset + sizeof(int), -1, BF_BLOCK_SIZE - (offset + sizeof(int)));
+  /*set dirty before calling the other functions*/
+  BF_Block_SetDirty(block);
+  BF_Block_SetDirty(new_block);
 	/*Finally, add the new key(and its pointers) in the correct block */
 	if (right == 0) {
 		index_sorted_insert(block_num, fileDesc, new_key, key_type, key_size);
