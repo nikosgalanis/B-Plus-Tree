@@ -16,11 +16,9 @@ int main(void) {
   if ((eNentry = AM_OpenIndex("data.db")) < 0) {
     AM_PrintError("Errror");
   }
-  for(int i = 0; i < 100; ++i) {
-    int v1 = i, k1 = i;
-    printf("--------Inserting %d ---------------\n",i );
+  for(int i = 0; i < 1500; ++i) {
+    int v1 = rand()%10000, k1 = i;
+    printf("--------Inserting %d ---------------\n",v1 );
     AM_InsertEntry(eNentry, (void*)&v1, (void*)&k1);
   }
-  print_tree(eNentry, 'D');
-  print_tree(eNentry, 'I');
 }
