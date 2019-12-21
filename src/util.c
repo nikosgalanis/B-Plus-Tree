@@ -152,8 +152,8 @@ boolean print_data_block(int fileDesc, int target_block) {
 	/*check if the records are as many as we want*/
 	memcpy(&max_records, first_block_info + sizeof(char) + 3 * sizeof(int), sizeof(int));
 	memcpy(&block_records, block_data + sizeof(char), sizeof(int));
-	if (max_records <= block_records) {
-		printf("Error in records\n");
+	if (max_records < block_records) {
+		printf("Error in records,max records are %d, this block has%d\n",max_records,block_records);
 		BF_UnpinBlock(block);
 		BF_Block_Destroy(&block);
 		BF_UnpinBlock(first_block);
@@ -263,7 +263,7 @@ boolean print_index_block(int fileDesc, int target_block){
 	/*check if the keys are as many as we want*/
 	memcpy(&max_keys, first_block_info + sizeof(char) + 2 * sizeof(int), sizeof(int));
 	memcpy(&block_keys, block_data + sizeof(char), sizeof(int));
-	if (max_keys <= block_keys) {
+	if (max_keys < block_keys) {
 		printf("Error in keys\n");
 		BF_UnpinBlock(block);
 		BF_Block_Destroy(&block);
