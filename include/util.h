@@ -6,26 +6,6 @@
 #include "defn.h"
 #include "stack.h"
 
-/* Macro instructions for error catching */
-#define CALL_BF(call)           \
-{                               \
-  BF_ErrorCode code = call;     \
-  if (code != BF_OK) {          \
-    BF_PrintError(code);        \
-    CALL_AM(BF_ERR);            \
-  }                             \
-}
-
-#define CALL_AM(call)                         \
-{                                             \
-  AM_ErrorCode code = call;                   \
-  if (code != AM_OK) {                        \
-    AM_PrintError("An error has occured");    \
-    AM_errno = code;                          \
-    return -1;                                   \
-  }                                           \
-}
-
 /* Defines */
 #define MAX_OPEN_FILES 20
 #define MAX_SCAN_FILES 20
@@ -36,17 +16,6 @@
 typedef enum s {
   false, true
 } boolean;
-
-typedef enum {
-  AM_OK,
-  BF_ERR,
-  MEM_ERR,
-  MAX_FILES_ERR,
-  MAX_SCAN_ERR,
-  WRONG_FILE_ERR,
-  TYPE_ERR,
-  NOT_OPEN_ERR,
-} AM_ErrorCode;
 
 /* Structs definition */
 typedef struct {
@@ -88,15 +57,57 @@ typedef struct {
 /* Global variables definition */
 Open_Files* Files;
 Open_Scans* Scans;
-int AM_errno;
+int AME_errno;
 
-/* Function headers definition */
+/* Macro instructions for error catching */
+#define CALL_BF(call)         \
+{                             \
+  BF_ErrorCode code = call;   \
+  if (code != BF_OK) {        \
+    BF_PrintError(code);      \
+  }                           \
+}
+
+#define CALL_OR_DIE(call)       \
+{                               \
+  int code = call;              \
+  if (code != AMΕ_OK) {         \
+    AME_errno = code;           \
+    return code;                \
+  }                             \
+}
+
+/**
+  Returns the index in Files->open array to store a new open file in this
+  position, otherwise AM_MAX_FILES_ERR is returned
+*/
 int find_empty_index();
+/**
+  Returns the index in Scans->open array to store a new scan file in this
+  position, otherwise AM_MAX_SCAN_ERR is returned
+*/
 int find_empty_scan();
+/**
+  Returns the index in Files->open array in which fileDesc was found, otherwise
+  AM_NOT_OPEN_FILE_ERR is returned
+*/
 int find_index(int fileDesc);
+/**
+  Returns the index in Scans->open array in which fileDesc was found, otherwise
+  AM_NOT_OPEN_SCAN_ERR is returned
+*/
 int find_scan(int fileDesc);
+/* Given two strings, this method returns the concatenated string */
 char* concat(const char *s1, const char *s2);
+/**
+ Checks if type is integer, float or string and if the length parameter is
+ compatible with the given type. In case of failure it returns AM_TYPE_ERR
+*/
+int type_length_match(char type, int length);
+/* A generic compar function give the two operands, the operator and the type */
 int compare(void *op1, int op, void *op2, char type);
+
+
 boolean print_data_block(int fileDesc, int target_block);
 boolean print_index_block(int fileDesc, int target_block);
 boolean print_tree(int fileDesc, char print_type);

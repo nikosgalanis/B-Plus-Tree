@@ -1,45 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
+#include "../include/init_destroy_funcs.h"
 #include "../include/util.h"
 
 #define AME_ERROR -1 //TODO: change this
 
 void AM_Init() {
 	BF_Init(MRU);
-	/* Initialize the files array */
-	Files = malloc(sizeof(Open_Files));
-	if (Files == NULL) {
-		printf("Memory exhausted!\n");
-		return;
-	}
-	Files->open = malloc(MAX_OPEN_FILES * sizeof(File_info));
-	if (Files->open == NULL) {
-		printf("Memory exhausted!\n");
-		return;
-	}
-	for (int i = 0; i < MAX_OPEN_FILES; ++i) {
-		Files->open[i].file_index = EMPTY;
-	}
-	Files->total = 0;
-	/* Initialize the scans array */
-	Scans = malloc(sizeof(Open_Scans));
-	if (Scans == NULL) {
-		printf("Memory exhausted!\n");
-		return;
-	}
-	Scans->open = malloc(MAX_SCAN_FILES * sizeof(Scan_info));
-	if (Scans->open == NULL) {
-		printf("Memory exhausted!\n");
-		return;
-	}
-	for (int i = 0; i < MAX_SCAN_FILES; ++i) {
-		Scans->open[i].file_index = EMPTY;
-	}
-	Scans->total = 0;
+	open_files_init();
+	open_scans_init();
 }
-
 
 int AM_OpenIndex(char *fileName) {
 	/* Open the file. and catch a possible error */
@@ -110,34 +83,28 @@ int AM_DestroyIndex(char *fileName) {
 }
 
 void AM_PrintError(char *errString) {
-  /* print the wanted string */
-  printf("%s\n",errString);
-  /* print an error message according to our global variable */
-  switch (AM_errno) {
-    case BF_ERR:
-      printf("The error occured in the Block File level.\n");
-      return;
-    case MEM_ERR:
-      printf("The error occured during allocation of memory in stack.\n");
-      return;
-    case MAX_FILES_ERR:
-      printf("Tried to open too many files. Last requested file will not be opened.\n");
-      return;
-    case WRONG_FILE_ERR:
-      printf("Tried to open a non-AM file. This file will not be opened.\n");
-      return;
-    case TYPE_ERR:
-      printf("Tried to initialize a file with unknown type of data.\n");
+  printf("%s\n", errString);
+  switch (AME_errno) {
+    case AME_BF_ERR:
+      printf("Block File lever error occured!\n");
+      break;
+    case AME_MEM_ERR:
+      printf("Memory allocation error occured!\n");
+      break;
+    case AME_MAX_FILES_ERR:
+      printf("Tried to open too many files. Last requested file will not be opened!\n");
+      break;
+    case AME_TYPE_ERR:
+      printf("Tried to initialize a file with unknown type of data!\n");
+			break;
+		default:
+			printf("Unknown error occured!\n");
+			break;
   }
 }
 
 void AM_Close() {
-  /* close the BF level */
   BF_Close();
-  /* free the struct for the open files */
-  free(Files->open);
-  free(Files);
-	/* free the struct for the open scans */
-	free(Scans->open);
-	free(Scans);
+	open_files_destroy();
+	open_scans_destroy();
 }

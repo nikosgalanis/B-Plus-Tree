@@ -2,12 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../include/util.h"
 #include "../include/insert_functions.h"
 
-#define AME_ERROR -1 //TODO: change this
-
 int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
-									 char attrType2,int attrLength2) {
+									 char attrType2, int attrLength2) {
+
+	/**
+		At first check if type and length fields match each other. Otherwise do not
+		create any AM file
+	*/
+
 	int offset;
 	/* Create the file */
   CALL_BF(BF_CreateFile(fileName));
@@ -87,7 +92,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 		memcpy(first_block_info + offset , &attrLength2new, sizeof(char));
 	}
 	else {
-		return AME_ERROR; //TODO: Return error
+		return -1; //TODO: Return error
   }
 	//TODO change the n and n+1 for max
   /* We've changed the block data, so its dirty */
@@ -98,6 +103,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 	BF_Block_Destroy(&first_block);
 	/*close the file*/
 	BF_CloseFile(fileDesc);
+
   return AME_OK;
 }
 

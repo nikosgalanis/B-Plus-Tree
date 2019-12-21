@@ -4,6 +4,11 @@
 /* Error codes */
 #define AME_OK 0
 #define AME_EOF -1
+#define AME_BF_ERR -2
+#define AME_MEM_ERR -3
+#define AME_MAX_FILES_ERR -4
+#define AME_MAX_SCANS_ERR -5
+#define AME_TYPE_ERR -6
 
 #define EQUAL 1
 #define NOT_EQUAL 2
@@ -13,7 +18,6 @@
 #define GREATER_THAN_OR_EQUAL 6
 
 void AM_Init(void);
-
 
 int AM_CreateIndex(
   const char *fileName, /* όνομα αρχείου */

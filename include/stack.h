@@ -1,5 +1,7 @@
 #pragma once
+
 #define MAX_CAPACITY 1000
+
 typedef struct{
 	int count;
 	int item[MAX_CAPACITY];

@@ -9,7 +9,7 @@ int find_empty_index() {
     if (Files->open[i].file_index == EMPTY)
       return i;
   }
-  return EMPTY;
+  return AME_MAX_FILES_ERR;
 }
 
 int find_empty_scan() {
@@ -17,7 +17,7 @@ int find_empty_scan() {
     if (Scans->open[i].file_index == EMPTY)
       return i;
   }
-  return EMPTY;
+  return AME_MAX_SCANS_ERR;
 }
 
 int find_index(int fileDesc) {
@@ -36,7 +36,6 @@ int find_scan(int fileDesc) {
   return EMPTY;
 }
 
-/* Append two strings */
 char* concat(const char *s1, const char *s2) {
     char* result = malloc(strlen(s1) + strlen(s2) + 1);
     strcpy(result, s1);
@@ -44,7 +43,6 @@ char* concat(const char *s1, const char *s2) {
     return result;
 }
 
-/* Generic compare function */
 int compare(void *op1, int op, void *op2, char type){
 	switch(type){
 		case INTEGER:
