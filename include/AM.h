@@ -2,7 +2,7 @@
 #define AM_H_
 
 /* Global variable for errors */
-int AME_errno;
+int AM_errno;
 
 /* Error codes */
 #define AME_OK 0

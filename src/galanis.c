@@ -84,7 +84,7 @@ int AM_DestroyIndex(char *fileName) {
 
 void AM_PrintError(char *errString) {
   printf("%s\n", errString);
-  switch (AME_errno) {
+  switch (AM_errno) {
     case AME_BF_ERR:
       printf("Block File lever error occured!\n");
       break;
