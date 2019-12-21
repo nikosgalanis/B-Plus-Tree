@@ -86,7 +86,7 @@ void AM_PrintError(char *errString) {
   printf("%s\n", errString);
   switch (AME_errno) {
     case AME_BF_ERR:
-      printf("Block File lever error occured!\n");
+      printf("Block File level error occured!\n");
       break;
     case AME_MEM_ERR:
       printf("Memory allocation error occured!\n");

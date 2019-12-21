@@ -64,6 +64,7 @@ Open_Scans* Scans;
   BF_ErrorCode code = call;   \
   if (code != BF_OK) {        \
     BF_PrintError(code);      \
+    CALL_OR_DIE(AME_BF_ERR);  \
   }                           \
 }
 
