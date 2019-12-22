@@ -177,6 +177,7 @@ boolean print_data_block(int fileDesc, int target_block) {
   	memcpy(&type2, first_block_info + offset, sizeof(char));
 	offset += sizeof(char);
 	memcpy(&attrLength2, first_block_info + offset, sizeof(int));
+  printf("attrlength2 %d\n",attrLength2 );
 	/*Now let's print the records*/
 	size = sizeof(Record) + attrLength1 + attrLength2;
 	int i;
@@ -191,13 +192,13 @@ boolean print_data_block(int fileDesc, int target_block) {
 		memcpy(cur_record, block_data + offset, size);
 		printf("Record %d [ ",i);
 		switch (type1) {
-			case 'i':
+			case INTEGER:
 				printf("%d ",*((int*) cur_record->key));
 				break;
-			case 'f':
+			case FLOAT:
 				printf("%f ",*((float *)cur_record->key));
 				break;
-			case 'c':
+			case STRING:
 				printf("%s ",(char*) cur_record->key);
 				break;
 			default:
@@ -211,14 +212,14 @@ boolean print_data_block(int fileDesc, int target_block) {
 		}
 		printf("| ");
 		switch (type2) {
-			case 'i':
+			case INTEGER:
 				printf("%d ",*( (int *) cur_record->value));
 				break;
-			case 'f':
+			case FLOAT:
 				printf("%f ",*( (float *) cur_record->value));
 				break;
-			case 'c':
-				printf("%s ",(char*) cur_record->value);
+			case STRING:
+				printf("ffn %s ",(char*) cur_record->value);
 				break;
 			default:
 				printf("error type\n");

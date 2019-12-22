@@ -30,7 +30,7 @@ Record* create_record(int fileDesc, void* key, void* value) {
 	rec->key = malloc(attrLength1);
 	memcpy(rec->key, key, attrLength1);
 	rec->value = malloc(attrLength2);
-	memcpy(rec->value, key, attrLength2);
+	memcpy(rec->value, value, attrLength2);
   /* The size we are going to use in allocations, is the size of the pointer +
      the size of the key and the value */
   rec->size = sizeof(Record) + attrLength1 + attrLength2;
@@ -83,7 +83,7 @@ int create_root(int fileDesc, char* append, int key_size) {
 
 /** Create an empty root, for the first time that we want to insert something in
 		our tree */
-int create_empty_root(int fileDesc,  void *key) {
+int create_empty_root(int fileDesc,  void *key, int keyLength) {
   BF_Block *first_block, *root_block, *first_data_block, *second_data_block;
   int offset;
   /* Get data of 1st block */
@@ -92,11 +92,9 @@ int create_empty_root(int fileDesc,  void *key) {
   char *first_block_info = BF_Block_GetData(first_block);
   /* Type of key and the length */
   char keyType;
-  int keyLength;
   offset = sizeof(char) + 4 * sizeof(int);
   memcpy(&keyType, first_block_info + offset, sizeof(char));
   offset = 2 * sizeof(char) + 4 * sizeof(int);
-  memcpy(&keyLength, first_block_info + offset, sizeof(int));
   /* key to a new variable */
   /* Create root block */
   int root_block_index = -1;
@@ -180,7 +178,6 @@ int create_empty_root(int fileDesc,  void *key) {
   BF_Block_Destroy(&first_block);
   BF_Block_Destroy(&second_data_block);
   BF_Block_Destroy(&first_data_block);
-
   return root_block_index;
 }
 
@@ -241,6 +238,7 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record, char
     }
     /* Each time, update the offset */
     offset += new_record->size;
+		free(curr_rec);
   }
   /* If we haven't yet inserted the record, now its time(at the end of the block) */
   memcpy(data + offset, new_record, new_record->size);
@@ -309,10 +307,12 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
       BF_Block_SetDirty(block);
 	    BF_UnpinBlock(block);
 	    BF_Block_Destroy(&block);
+			free(key_to_insert);
 			return true;
 		}
 		/* Each time, update the offset */
 		offset += sizeof(int) + key_size;
+		free(curr_key);
 	 }
 	 /* If we haven't yet inserted the key, now its time(at the end of the block) */
 	 memcpy(data + offset, new_tuple, 2 * sizeof(int) + key_size);
@@ -322,6 +322,8 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 	 BF_Block_SetDirty(block);
 	 BF_UnpinBlock(block);
 	 BF_Block_Destroy(&block);
+	 free(key_to_insert);
+
 	 /* Everything is ok */
 	 return true;
 }
@@ -427,6 +429,8 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   BF_UnpinBlock(new_block);
   BF_Block_Destroy(&block);
   BF_Block_Destroy(&new_block);
+	free(rec_to_return);
+	free(key1);
   /* Return the key of the record we want as an index */
   return to_return;
 }
@@ -520,6 +524,8 @@ char* split_index_block(int fileDesc, int block_num, char* new_entry, char key_t
   BF_UnpinBlock(new_block);
   BF_Block_Destroy(&block);
   BF_Block_Destroy(&new_block);
+	free(key_to_return);
+	free(middle);
   /* Return the string we want to append to the parent */
   return to_return;
 }
@@ -602,7 +608,6 @@ Stack* find_data_block(int fileDesc, int root_num, void* key, char key_type, int
 	do {
 		BF_GetBlock(fileDesc, block_num, block);
 		/* Push the block number to the stack */
-		printf("pushing %d\n",block_num );
     Push(path, block_num);
 		char* block_info = BF_Block_GetData(block);
 		/* Get block identifier */
@@ -631,13 +636,14 @@ Stack* find_data_block(int fileDesc, int root_num, void* key, char key_type, int
 				/* Update the found variable */
 				found = true;
 				/* Get corresponding index */
-				memcpy(&block_num, block_info + block_offset - key_size, sizeof(int));
+				memcpy(&block_num, block_info + block_offset - sizeof(int), sizeof(int));
 				/* Unpin index block */
 				BF_UnpinBlock(block);
 				/* Go one level down to the B+ tree */
 				break;
 			}
 			block_offset += key_size;
+			free(block_key);
 		}
 		if (found == false) {
 			/* We reached the end of the index block, so visit the most right branch */

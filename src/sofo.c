@@ -7,7 +7,6 @@
 
 int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 									 char attrType2, int attrLength2) {
-
 	/**
 		At first check if type and length fields match each other. Otherwise do not
 		create any AM file
@@ -83,7 +82,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 	memcpy(first_block_info + offset , &attrType2, sizeof(char));
 
 	offset = 3 * sizeof(char) + 5 * sizeof(int);
-	memcpy(first_block_info + offset , &attrLength2new, sizeof(char));
+	memcpy(first_block_info + offset , &attrLength2new, sizeof(int));
 
   /* We've changed the block data, so its dirty */
   BF_Block_SetDirty(first_block);
@@ -111,9 +110,6 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	int root_block_int;
 	memcpy(&root_block_int, first_block_info + offset, sizeof(int));
 	/* Check if there is no root yet. In that case, create an empty one */
-	if (root_block_int == -1) {
-		root_block_int = create_empty_root(fileDesc, value1);
-	}
 	/* Get the size and the type of the key from the 1st block */
 	char key_type; int key_size;
 	offset = sizeof(char) + 4 * sizeof(int);
@@ -122,6 +118,9 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	memcpy(&key_size, first_block_info +  offset, sizeof(int));
 	BF_Block_SetDirty(first_block);
 	BF_UnpinBlock(first_block);
+	if (root_block_int == -1) {
+		root_block_int = create_empty_root(fileDesc, value1, key_size);
+	}
 
 
 	/** Create a stack in which we will hold the path from the root to the data
@@ -151,7 +150,6 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 		BF_Block_SetDirty(first_block);
 		BF_UnpinBlock(first_block);
 		BF_Block_Destroy(&first_block);
-		printf("insert ok!\n");
 		return AME_OK;
 	 }
 	 /** If there is no more room, split the block into 2, so the both can hold
@@ -188,7 +186,6 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 			/* Save the new root pointer in the first block */
 			offset = sizeof(char) + sizeof(int);
 			memcpy(first_block_info + offset, &new_root_block_int, sizeof(int));
-			print_index_block(fileDesc, new_root_block_int);
 
 			/*Break the loop */
 			break;
@@ -208,6 +205,5 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	BF_Block_Init(&index);
 	BF_GetBlock(fileDesc, 1, index);
 	char* ind_data = BF_Block_GetData(index);
-	printf("insert ok!\n");
 	return AME_OK;
 }

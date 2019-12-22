@@ -106,5 +106,6 @@ void AM_PrintError(char *errString) {
 void AM_Close() {
   BF_Close();
 	open_files_destroy();
+	printf("here\n");
 	open_scans_destroy();
 }

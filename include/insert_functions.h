@@ -14,7 +14,7 @@ int create_root(int fileDesc, char* append, int key_size);
 
 /** Create an empty root, for the first time that we want to insert something in
 		our tree */
-int create_empty_root(int fileDesc,  void *key);
+int create_empty_root(int fileDesc,  void *key, int key_size);
 
 /* Returns a string which contains exactly the info we want to append
   to the higher level block. */
