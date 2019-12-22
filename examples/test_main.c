@@ -17,9 +17,9 @@ int main(void) {
     AM_PrintError("Errror");
   }
   int v1 = 10; char* k1 = "lalala";
-  for(int i = 0; i < 100; ++i) {
-    int v1 = i; char* k1 = "lallala";
-    printf("--------Inserting %d ---------------\n",v1 );
+  for(int i = 0; i < 10000; ++i) {
+    int v1 = rand()%100; char* k1 = "lallala";
+    printf("--------Inserting %d ---------------\n",i );
     // if (i == 1863) {
     //     // print_data_block(eNentry, 6);
     // }
@@ -28,11 +28,6 @@ int main(void) {
     // }
     AM_InsertEntry(eNentry, (void*)&v1, (void*)k1);
   }
-<<<<<<< HEAD
-   print_tree(eNentry, 'I');
-  print_tree(eNentry, 'D');
-=======
   //print_tree(eNentry, 'D');
   //print_tree(eNentry, 'I');
->>>>>>> af932f9885dc71f8dc30751704f0c971ccfd8638
 }

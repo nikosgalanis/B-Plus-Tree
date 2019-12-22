@@ -1160,7 +1160,6 @@ int main() {
 
 	eage = 19;
 	printf("\nRESULT OF QUERY #3\n\n");
-
 	if ((eAentry = AM_OpenIndex(empAge)) < 0) {
 		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empAge);
 		AM_PrintError(errStr);

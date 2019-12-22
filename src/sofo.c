@@ -88,7 +88,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
   /* We've changed the block data, so its dirty */
   BF_Block_SetDirty(first_block);
   /* Unpin the block from the memory */
-  BF_UnpinBlock(first_block);
+  CALL_BF(BF_UnpinBlock(first_block));
 	/* Destroy the block pointer */
 	BF_Block_Destroy(&first_block);
 	/* Close the file */
@@ -104,7 +104,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	int offset;
 	/* Get first block data */
 	BF_Block_Init(&first_block);
-	BF_GetBlock(fileDesc, 0, first_block);
+	CALL_BF(BF_GetBlock(fileDesc, 0, first_block));
 	char *first_block_info = BF_Block_GetData(first_block);
 	/* Get root number */
 	offset = sizeof(char) + sizeof(int);
@@ -118,12 +118,15 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	offset = 2 * sizeof(char) + 4 * sizeof(int);
 	memcpy(&key_size, first_block_info +  offset, sizeof(int));
 	BF_Block_SetDirty(first_block);
-	BF_UnpinBlock(first_block);
+	CALL_BF(BF_UnpinBlock(first_block));
 	if (root_block_int == -1) {
 		root_block_int = create_empty_root(fileDesc, value1, key_size);
+		/* If the rroot is still -1, we are experiencing an error */
+		if (root_block_int == -1) {
+			AM_errno = AME_INSERT_ROOT_ERR;
+			return AME_INSERT_ROOT_ERR;
+		}
 	}
-
-
 	/** Create a stack in which we will hold the path from the root to the data
 	   block. In order to implement the possible recursive split of the blocks,
 		 we will pop from that stack to access higher levels of the tree */
@@ -136,12 +139,12 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	 /* If there is enough room in that data block */
 	 if (record_fits_data(fileDesc,target_block_index) == true) {
 		/* Just insert the new record */
-		data_sorted_insert(target_block_index, fileDesc, new_record, key_type);
+		if (data_sorted_insert(target_block_index, fileDesc, new_record, key_type)) {
 		/*all records by 1*/
 		int all_records;
 		offset = sizeof(char);
 		/* re-gain access to the 1st block */
-		BF_GetBlock(fileDesc, 0, first_block);
+		CALL_BF(BF_GetBlock(fileDesc, 0, first_block));
 		first_block_info = BF_Block_GetData(first_block);
 
 		memcpy(&all_records,first_block_info + offset, sizeof(int));
@@ -149,7 +152,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 		memcpy(first_block_info + offset, &all_records,sizeof(int));
 		/* Set dirty and unpin */
 		BF_Block_SetDirty(first_block);
-		BF_UnpinBlock(first_block);
+		CALL_BF(BF_UnpinBlock(first_block));
 		BF_Block_Destroy(&first_block);
 		return AME_OK;
 	 }
@@ -157,6 +160,10 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	 		 more records */
 	 else {
 		 append = split_data_block(fileDesc, target_block_index, new_record, key_type, key_size);
+		 if (append == NULL) {
+			 AM_errno = AME_CANT_SPLIT;
+			 return AME_CANT_SPLIT;
+		 }
 	 }
 	/** while there are still index blocks in the stack (aka we have not reached
 		  the root) */
@@ -166,7 +173,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 		/* if there is room for the extra key in that index block */
 		if (key_fits_index(fileDesc, target_block_index)) {
 			/* Insert it there */
-			index_sorted_insert(target_block_index, fileDesc, append, key_type, key_size);
+			CALL_OR_DIE(index_sorted_insert(target_block_index, fileDesc, append, key_type, key_size));
 			/* and break the loop */
 			break;
 		}
@@ -180,7 +187,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 		/*If we have reached the root */
 		if (target_block_index == root_block_int) {
 			/* re-gain access to the 1st block */
-			BF_GetBlock(fileDesc, 0, first_block);
+			CALL_BF(BF_GetBlock(fileDesc, 0, first_block));
 			first_block_info = BF_Block_GetData(first_block);
 			/* create a new root, and insert the tuple from the previous level */
 			int new_root_block_int = create_root(fileDesc, append, key_size);
@@ -200,11 +207,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	memcpy(first_block_info + offset, &all_records,sizeof(int));
 	/* Set dirty and unpin */
 	BF_Block_SetDirty(first_block);
-	BF_UnpinBlock(first_block);
+	CALL_BF(BF_UnpinBlock(first_block));
 	BF_Block_Destroy(&first_block);
-	BF_Block* index;
-	BF_Block_Init(&index);
-	BF_GetBlock(fileDesc, 1, index);
-	char* ind_data = BF_Block_GetData(index);
 	return AME_OK;
 }
