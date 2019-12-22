@@ -36,7 +36,8 @@ int AM_OpenIndexScan(int fileDesc, int op, void *value) {
   memcpy(Scans->open[scan_index].value, value, Files->open[file_index].attr_length_1);
   /* Increase number of open Scans */
   Scans->total++;
-  return AME_OK;
+  /* Return file descriptor */
+  return fileDesc;
 }
 
 
@@ -51,6 +52,13 @@ void *AM_FindNextEntry(int scanDesc) {
       break;
     }
   }
+  /* Allocate memory for value */
+  int index = Scans->open[scan_index].file_index;
+  void* value = malloc(Files->open[index].attr_length_2);
+  if (value == NULL) {
+    AM_errno = AME_MEM_ERR;
+    return NULL;
+  }
   /* Check if scan is open */
   if (scan_is_open) {
     /* Check if value is NULL */
@@ -60,18 +68,27 @@ void *AM_FindNextEntry(int scanDesc) {
         Scans->open[scan_index].last_entry.no_entry == -1) {
         /* Initialize the first entry */
         if (init_entry(scan_index) == AME_EOF) {
+          printf("Whattt\n");
           AM_errno = AME_EOF;
           return NULL;
         }
-      /* Check if an error occured last time we called AM_FindNextEntry  */
+        printf("GUYSSS\n");
+      /* Check if an error occured last time we called AM_FindNextEntry */
       } else if (Scans->open[scan_index].error == true) {
+        printf("ME TPT\n");
         AM_errno = AME_EOF;
         return NULL;
       /* Everything ok, so proceed to the next entry */
       } else {
         Scans->open[scan_index].last_entry.no_entry++;
+        printf("GOOOOD\n");
       }
-      // TODO
+      /* Get value */
+      if (get_entry_value(scan_index, value) == AME_EOF) {
+        printf("yeeeees\n");
+        AM_errno = AME_EOF;
+        return NULL;
+      }
     } else {
       AM_errno = AME_SCAN_ERR;
       return NULL;
@@ -81,7 +98,7 @@ void *AM_FindNextEntry(int scanDesc) {
     return NULL;
   }
   // return NextEntry
-  return NULL; //TODO
+  return value;
 }
 
 

@@ -7,9 +7,13 @@
 
 int init_entry(int scan_index) {
   /* Get useful info */
-  int fd = Scans->open[scan_index].file_index;
-  int fileDesc =  Files->open[fd].file_index;
-  /* To get access to the root, get to the first block */
+  int index = Scans->open[scan_index].file_index;
+  int fileDesc = Files->open[index].file_index;
+  char key_type = Files->open[index].attr_type_1;
+  int key_size = Files->open[index].attr_length_1;
+  void* key = malloc(key_size);
+  memcpy(key, Scans->open[scan_index].value, key_size);
+  /* Get root block num */
   int root;
   BF_Block* first_block;
   BF_Block_Init(&first_block);
@@ -19,16 +23,30 @@ int init_entry(int scan_index) {
   /* Unpin and Destroy the block pointer */
   BF_UnpinBlock(first_block);
   BF_Block_Destroy(&first_block);
-  char key_type = Files->open[fd].attr_type_1;
-  int key_size = Files->open[fd].attr_length_1;
-  void* key = malloc(key_size);
-  memcpy(key, Scans->open[scan_index].value, key_size);
   /* First find data block in which value is stored */
   Stack* path;
-  path = find_data_block(fd, root, key, key_type, key_size);
+  path = find_data_block(fileDesc, root, key, key_type, key_size);
   int target_block_index = Pop(path);
-  printf("DATA BLOCK %d\n", target_block_index);
+  int entry_num;
 
+  /* Update last_entry block num */
+  Scans->open[scan_index].last_entry.no_block = target_block_index;
+  switch(Scans->open[scan_index].op) {
+    /* Lowest key is always in the first entry in a datablock */
+    case LESS_THAN_OR_EQUAL:
+    case LESS_THAN:
+    case NOT_EQUAL:
+      Scans->open[scan_index].last_entry.no_entry = 0;
+      break;
+    /* Search for the corresponding value position inside the datablock */
+    case GREATER_THAN_OR_EQUAL:
+		case GREATER_THAN:
+    case EQUAL:
+      CALL_OR_DIE(find_first_entry(fileDesc, target_block_index, key, \
+                                   key_type, key_size, &entry_num));
+      Scans->open[scan_index].last_entry.no_entry = entry_num;
+      break;
+  }
   return AME_OK;
 }
 
@@ -51,7 +69,12 @@ int find_first_entry(int file_desc, int block_num, void* key, char key_type,
 
   /* Initialize a new record */
   Record* record = malloc(sizeof(Record) + attr_length_1 + attr_length_2);
-
+  if (record == NULL) {
+    BF_UnpinBlock(block);
+    BF_Block_Destroy(&block);
+    AM_errno = AME_MEM_ERR;
+    return AME_MEM_ERR;
+  }
   /* Iterate over records */
   boolean found = false;
   for (int i = 0; i < no_records; ++i) {
@@ -62,7 +85,7 @@ int find_first_entry(int file_desc, int block_num, void* key, char key_type,
       found = true;
       break;
     }
-    offset += sizeof(record->size);
+    offset += record->size;
   }
 
   /* Unpin and destroy block */
@@ -72,6 +95,7 @@ int find_first_entry(int file_desc, int block_num, void* key, char key_type,
 
   /* Check if entry was found */
   if (!found) {
+    AM_errno = AME_EOF;
     return AME_EOF;
   }
 
@@ -80,16 +104,16 @@ int find_first_entry(int file_desc, int block_num, void* key, char key_type,
 
 int get_entry_value(int scan_index, void* value) {
   /* Extract info from scan_index open scan */
-  int fd = Scans->open[scan_index].file_index;
+  int index = Scans->open[scan_index].file_index;
   int block_num = Scans->open[scan_index].last_entry.no_block;
   int entry_num = Scans->open[scan_index].last_entry.no_entry;
-  int attr_length_1 = Files->open[fd].attr_length_1;
-  int attr_length_2 = Files->open[fd].attr_length_2;
+  int attr_length_1 = Files->open[index].attr_length_1;
+  int attr_length_2 = Files->open[index].attr_length_2;
 
   /* Get data block */
   BF_Block* block;
   BF_Block_Init(&block);
-  BF_GetBlock(fd, block_num, block);
+  BF_GetBlock(index, block_num, block);
   char* block_data = BF_Block_GetData(block);
 
   int offset = sizeof(char);
@@ -116,7 +140,7 @@ int get_entry_value(int scan_index, void* value) {
       /* Unpin past block */
       BF_UnpinBlock(block);
       /* Get new block and store value */
-      BF_GetBlock(fd, next_block_num, block);
+      BF_GetBlock(index, next_block_num, block);
       block_data = BF_Block_GetData(block);
       memcpy(record, block_data + offset, sizeof(Record) + attr_length_1 + attr_length_2);
       memcpy(value, record->value, attr_length_2);
@@ -127,6 +151,7 @@ int get_entry_value(int scan_index, void* value) {
       BF_Block_Destroy(&block);
       free(record);
       /* Return error */
+      AM_errno = AME_EOF;
       return AME_EOF;
     }
   }

@@ -21,7 +21,10 @@ int AM_errno;
 #define AME_FILE_IS_USED_ERR -13
 #define AME_SCAN_IS_USED_ERR -14
 #define AME_OP_ERR -15
-#define AME_SCAN_ERR - 16
+#define AME_SCAN_ERR -16
+#define AME_BLOCK_FULL -17
+#define AME_CANT_SPLIT -18
+#define AME_INSERT_ROOT_ERR -19
 
 #define EQUAL 1
 #define NOT_EQUAL 2
@@ -30,6 +33,7 @@ int AM_errno;
 #define LESS_THAN_OR_EQUAL 5
 #define GREATER_THAN_OR_EQUAL 6
 
+/* Function declarations */
 void AM_Init(void);
 
 int AM_CreateIndex(
