@@ -69,6 +69,7 @@ int AM_OpenIndex(char *fileName) {
 	/* Unpin and destroy the block */
 	BF_UnpinBlock(first_block);
 	BF_Block_Destroy(&first_block);
+	/* Return file descriptor */
 	return fileDesc;
 }
 
@@ -145,6 +146,9 @@ void AM_PrintError(char *errString) {
     case AME_BF_ERR:
       printf("BF error occured!\n");
       break;
+		case AME_EOF:
+			printf("There are no other entries which meet the requirements of the open scan.\n\n");
+			break;
     case AME_MEM_ERR:
       printf("Memory allocation error occured!\n");
       break;
@@ -183,6 +187,9 @@ void AM_PrintError(char *errString) {
 			break;
 		case AME_OP_ERR:
 			printf("Tried to use an unknown type of operator!");
+			break;
+		case AME_SCAN_ERR:
+			printf("AN error occured while scanning the file.\n\n");
 			break;
 		default:
 			printf("Unknown error occured!\n");
