@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "../include/scan_funcs.h"
+#include "../include/print_funcs.h"
 
 int init_entry(int scan_index) {
   /* Get useful info */
@@ -52,7 +53,6 @@ int init_entry(int scan_index) {
 
 int find_first_entry(int file_desc, int block_num, void* key, char key_type,
   int key_size, int* entry_num) {
-
   int attr_length_1 = Files->open[file_desc].attr_length_1;
   int attr_length_2 = Files->open[file_desc].attr_length_2;
   /* Get data block */
@@ -60,7 +60,9 @@ int find_first_entry(int file_desc, int block_num, void* key, char key_type,
 	BF_Block_Init(&block);
 	BF_GetBlock(file_desc, block_num, block);
 	char* block_data = BF_Block_GetData(block);
-
+  memcpy(&block_num, block_data + sizeof(char) + 2 * sizeof(int), sizeof(int));
+  BF_GetBlock(file_desc, block_num, block);
+  block_data = BF_Block_GetData(block);
   /* Find entry */
   int offset = sizeof(char);
   int no_records;
@@ -85,7 +87,7 @@ int find_first_entry(int file_desc, int block_num, void* key, char key_type,
       found = true;
       break;
     }
-    offset += record->size;
+    offset += sizeof(Record) + attr_length_1 + attr_length_2;
   }
 
   /* Unpin and destroy block */
