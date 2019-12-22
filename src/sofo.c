@@ -132,9 +132,7 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	 char* append = malloc(new_record->size);
 	 memcpy(append, new_record, new_record->size);
 	 /* Pop the first element from the queue. It will be a data block */
-	 printf("here\n");
 	 int target_block_index = Pop(path);
-	 printf("target is %d\n",target_block_index);
 	 /* If there is enough room in that data block */
 	 if (record_fits_data(fileDesc,target_block_index) == true) {
 		/* Just insert the new record */
@@ -159,7 +157,6 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	 /** If there is no more room, split the block into 2, so the both can hold
 	 		 more records */
 	 else {
-		 printf("need to split\n");
 		 append = split_data_block(fileDesc, target_block_index, new_record, key_type, key_size);
 	 }
 	/** while there are still index blocks in the stack (aka we have not reached
@@ -167,12 +164,10 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	while (! Empty(path)) {
 		/* Pop the upeer level */
 		target_block_index = Pop(path);
-		printf("path not empty\n");
 		/* if there is room for the extra key in that index block */
 		if (key_fits_index(fileDesc, target_block_index)) {
 			/* Insert it there */
 			index_sorted_insert(target_block_index, fileDesc, append, key_type, key_size);
-			printf("should print this\n" );
 			/* and break the loop */
 			break;
 		}
@@ -181,18 +176,20 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 			/** Split the block into 2, and keep the tuple (pointer, key, pointer)
 			    to append to the higher level */
 			append = split_index_block(fileDesc, target_block_index, append, key_type, key_size);
+
 		}
 		/*If we have reached the root */
 		if (target_block_index == root_block_int) {
-			printf("aaaaaaaaaaaaaaaaaaaaaaaaa\n");
 			/* re-gain access to the 1st block */
 			BF_GetBlock(fileDesc, 0, first_block);
 			first_block_info = BF_Block_GetData(first_block);
 			/* create a new root, and insert the tuple from the previous level */
-			int new_root_block_int = create_root(fileDesc, append);
+			int new_root_block_int = create_root(fileDesc, append, key_size);
 			/* Save the new root pointer in the first block */
 			offset = sizeof(char) + sizeof(int);
 			memcpy(first_block_info + offset, &new_root_block_int, sizeof(int));
+			print_index_block(fileDesc, new_root_block_int);
+
 			/*Break the loop */
 			break;
 		}
@@ -211,7 +208,6 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	BF_Block_Init(&index);
 	BF_GetBlock(fileDesc, 1, index);
 	char* ind_data = BF_Block_GetData(index);
-	printf("should be  %c\n",ind_data[0] );
 	printf("insert ok!\n");
 	return AME_OK;
 }
