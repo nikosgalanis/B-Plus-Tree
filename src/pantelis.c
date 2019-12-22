@@ -85,7 +85,6 @@ void *AM_FindNextEntry(int scanDesc) {
       }
       /* Get value */
       if (get_entry_value(scan_index, value) == AME_EOF) {
-        printf("yeeeees\n");
         AM_errno = AME_EOF;
         return NULL;
       }
