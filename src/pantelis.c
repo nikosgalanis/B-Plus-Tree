@@ -36,7 +36,7 @@ int AM_OpenIndexScan(int fileDesc, int op, void *value) {
   memcpy(Scans->open[scan_index].value, value, Files->open[file_index].attr_length_1);
   /* Increase number of open Scans */
   Scans->total++;
-  return AME_OK;
+  return fileDesc;
 }
 
 

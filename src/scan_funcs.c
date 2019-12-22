@@ -25,7 +25,7 @@ int init_entry(int scan_index) {
   memcpy(key, Scans->open[scan_index].value, key_size);
   /* First find data block in which value is stored */
   Stack* path;
-  path = find_data_block(fd, root, key, key_type, key_size);
+  path = find_data_block(fileDesc, root, key, key_type, key_size);
   int target_block_index = Pop(path);
   printf("DATA BLOCK %d\n", target_block_index);
 

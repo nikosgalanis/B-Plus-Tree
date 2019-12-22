@@ -12,7 +12,7 @@
 
 #include "defn.h"
 #include "AM.h"
-
+#include "util.h"
 char empName[40];
 char empAge[40];
 char empSal[40];
@@ -107,7 +107,6 @@ int main() {
 		sprintf(errStr, "Error in AM_CreateIndex called on %s \n", empDname);
 		AM_PrintError(errStr);
 	}
-
 	/********************************************************************************
 	 *  ¶νοιγμα των τεσσάρων ΑΚ (με σκοπό την εισαγωγή εγγραφών)                    *
 	 ********************************************************************************/
@@ -1059,7 +1058,6 @@ int main() {
 		sprintf(errStr, "Error in AM_CloseIndex called on %s \n", empDname);
 		AM_PrintError(errStr);
 	}
-
 	/********************************************************************************
 	 *      Επερώτηση #1                                                            *
 	 *  Έυρεση της εγγραφής "KOKKINOS ARISTOTELHS", γνωρίζοντας ότι το όνομα είναι  *

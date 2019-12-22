@@ -69,7 +69,7 @@ int AM_OpenIndex(char *fileName) {
 	/* Unpin and destroy the block */
 	BF_UnpinBlock(first_block);
 	BF_Block_Destroy(&first_block);
-	return AME_OK;
+	return fileDesc;
 }
 
 
