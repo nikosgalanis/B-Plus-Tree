@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "../include/insert_functions.h"
+#include "../include/scan_funcs.h"
 
 /** Get the key and the value, and create the struct that we are going to use
 	  as a record in our file */
@@ -594,61 +595,4 @@ boolean key_fits_index(int fileDesc, int target_block_index) {
 	BF_Block_Destroy(&first_block);
 	BF_Block_Destroy(&target_block);
 	return fits;
-}
-
-Stack* find_data_block(int fileDesc, int root_num, void* key, char key_type, int key_size) {
-	/* Initialize a stack to keep our path*/
-	Stack* path = InitializeStack();
-	/* Initialize a new block */
-	BF_Block* block;
-	BF_Block_Init(&block);
-	/* Starting from the root */
-	int block_num = root_num;
-	char block_idf;
-	do {
-		BF_GetBlock(fileDesc, block_num, block);
-		/* Push the block number to the stack */
-    Push(path, block_num);
-		char* block_info = BF_Block_GetData(block);
-		/* Get block identifier */
-		int block_offset = 0;
-		memcpy(&block_idf, block_info, sizeof(char));
-		block_offset += sizeof(char);
-		if (block_idf == 'D') {
-			BF_UnpinBlock(block);
-			BF_Block_Destroy(&block);
-			return path;
-		}
-		/* Get number of indexes stored into the block */
-		int no_indxs;
-		memcpy(&no_indxs, block_info + block_offset, sizeof(int));
-		block_offset += sizeof(int);
-		boolean found = false;
-		for (int i = 0; i < no_indxs; ++i) {
-			/* surpass index to block */
-			block_offset += sizeof(int);
-			void* block_key = malloc(key_size);
-			memcpy(block_key, block_info + block_offset, key_size);
-			/* Compare key with block key */
-			int result = compare(key, LESS_THAN_OR_EQUAL, block_key, key_type);
-			/* if given key <= block key go to corresponding block */
-			if (result) {
-				/* Update the found variable */
-				found = true;
-				/* Get corresponding index */
-				memcpy(&block_num, block_info + block_offset - sizeof(int), sizeof(int));
-				/* Unpin index block */
-				BF_UnpinBlock(block);
-				/* Go one level down to the B+ tree */
-				break;
-			}
-			block_offset += key_size;
-			free(block_key);
-		}
-		if (found == false) {
-			/* We reached the end of the index block, so visit the most right branch */
-			memcpy(&block_num, block_info + block_offset, sizeof(int));
-			BF_UnpinBlock(block);
-		}
-	}	while (block_idf == 'I');
 }

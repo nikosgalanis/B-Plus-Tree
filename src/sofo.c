@@ -4,6 +4,7 @@
 
 #include "../include/util.h"
 #include "../include/insert_functions.h"
+#include "../include/scan_funcs.h"
 
 int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 									 char attrType2, int attrLength2) {

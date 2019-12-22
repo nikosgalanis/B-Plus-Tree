@@ -113,8 +113,3 @@ char* concat(const char *s1, const char *s2);
 int type_length_match(char type, int length);
 /* A generic compar function give the two operands, the operator and the type */
 int compare(void *op1, int op, void *op2, char type);
-
-
-boolean print_data_block(int fileDesc, int target_block);
-boolean print_index_block(int fileDesc, int target_block);
-boolean print_tree(int fileDesc, char print_type);
