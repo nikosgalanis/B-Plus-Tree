@@ -111,7 +111,6 @@ int get_entry_value(int scan_index, void* value) {
   int entry_num = Scans->open[scan_index].last_entry.no_entry;
   int attr_length_1 = Files->open[index].attr_length_1;
   int attr_length_2 = Files->open[index].attr_length_2;
-
   /* Get data block */
   BF_Block* block;
   BF_Block_Init(&block);
@@ -124,10 +123,10 @@ int get_entry_value(int scan_index, void* value) {
   offset += 2 * sizeof(int);
   int next_block_num;
   memcpy(&next_block_num, block_data + offset, sizeof(int));
+  offset += sizeof(int);
 
   /* Initialize a new record */
   Record* record = malloc(sizeof(Record) + attr_length_1 + attr_length_2);
-
   /* Check if entry_num exists in current data block */
   if (entry_num < no_records) {
     offset += entry_num * (sizeof(Record) + attr_length_1 + attr_length_2);
