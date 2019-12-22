@@ -25,7 +25,7 @@ int init_entry(int scan_index) {
 }
 
 int find_first_entry(int file_desc, int block_num, void* key, char key_type,
-  int key_size, int* entry_offset) {
+  int key_size, int* entry_num) {
 
   int attr_length_1 = Files->open[file_desc].attr_length_1;
   int attr_length_2 = Files->open[file_desc].attr_length_2;
@@ -50,7 +50,7 @@ int find_first_entry(int file_desc, int block_num, void* key, char key_type,
     memcpy(record, block_data + offset, sizeof(Record) + attr_length_1 + attr_length_2);
     int result = compare(key, LESS_THAN_OR_EQUAL, record->key, key_type);
     if (result) {
-      *entry_offset = offset;
+      *entry_num = i;
       found = true;
       break;
     }
@@ -66,6 +66,67 @@ int find_first_entry(int file_desc, int block_num, void* key, char key_type,
   if (!found) {
     return AME_EOF;
   }
+
+  return AME_OK;
+}
+
+int get_entry_value(int scan_index, void* value) {
+  /* Extract info from scan_index open scan */
+  int fd = Scans->open[scan_index].file_index;
+  int block_num = Scans->open[scan_index].last_entry.no_block;
+  int entry_num = Scans->open[scan_index].last_entry.no_entry;
+  int attr_length_1 = Files->open[fd].attr_length_1;
+  int attr_length_2 = Files->open[fd].attr_length_2;
+
+  /* Get data block */
+  BF_Block* block;
+  BF_Block_Init(&block);
+  BF_GetBlock(fd, block_num, block);
+  char* block_data = BF_Block_GetData(block);
+
+  int offset = sizeof(char);
+  int no_records;
+  memcpy(&no_records, block_data + offset, sizeof(int));
+  offset += 2 * sizeof(int);
+  int next_block_num;
+  memcpy(&next_block_num, block_data + offset, sizeof(int));
+
+  /* Initialize a new record */
+  Record* record = malloc(sizeof(Record) + attr_length_1 + attr_length_2);
+
+  /* Check if entry_num exists in current data block */
+  if (entry_num < no_records) {
+    offset += entry_num * (sizeof(Record) + attr_length_1 + attr_length_2);
+    memcpy(record, block_data + offset, sizeof(Record) + attr_length_1 + attr_length_2);
+    memcpy(value, record->value, attr_length_2);
+  /* Go to the next data block if that exists */
+  } else {
+    if (next_block_num != -1) {
+      /* Update last entry */
+      Scans->open[scan_index].last_entry.no_block = next_block_num;
+      Scans->open[scan_index].last_entry.no_entry = 0;
+      /* Unpin past block */
+      BF_UnpinBlock(block);
+      /* Get new block and store value */
+      BF_GetBlock(fd, next_block_num, block);
+      block_data = BF_Block_GetData(block);
+      memcpy(record, block_data + offset, sizeof(Record) + attr_length_1 + attr_length_2);
+      memcpy(value, record->value, attr_length_2);
+    } else {
+      Scans->open[scan_index].error = true;
+      /* Unpin and destroy block */
+      BF_UnpinBlock(block);
+      BF_Block_Destroy(&block);
+      free(record);
+      /* Return error */
+      return AME_EOF;
+    }
+  }
+
+  /* Everything ok, so unpin and destroy block */
+  BF_UnpinBlock(block);
+  BF_Block_Destroy(&block);
+  free(record);
 
   return AME_OK;
 }
