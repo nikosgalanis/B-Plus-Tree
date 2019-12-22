@@ -28,9 +28,9 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
   CALL_BF(BF_AllocateBlock(fileDesc, first_block));
   /* Get the total number of available blocks(1) */
   int blocks_num;
-  BF_GetBlockCounter(fileDesc, &blocks_num);
+  CALL_BF(BF_GetBlockCounter(fileDesc, &blocks_num));
   /* Get access to the first block */
-  BF_GetBlock(fileDesc, blocks_num - 1, first_block);
+  CALL_BF(BF_GetBlock(fileDesc, blocks_num - 1, first_block));
 
   /* Set its data to be the character 'B', so we can recognize the B+ files */
   char* first_block_info = BF_Block_GetData(first_block);
@@ -53,7 +53,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
 	int attrLength1new;
 	int attrLength2new;
 	if (attrType1 == 'c') {
-		attrLength1new = attrLength1 + 1; // \O
+		attrLength1new = attrLength1 + 1;
 	}
 	else {
 		attrLength1new = attrLength1;
@@ -91,7 +91,7 @@ int AM_CreateIndex(const char* fileName, char attrType1, int attrLength1,
   BF_UnpinBlock(first_block);
 	/* Destroy the block pointer */
 	BF_Block_Destroy(&first_block);
-	/*close the file*/
+	/* Close the file */
 	BF_CloseFile(fileDesc);
 
   return AME_OK;

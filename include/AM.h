@@ -15,7 +15,12 @@ int AM_errno;
 #define AME_FLOAT_ERR -7
 #define AME_STRING_ERR -8
 #define AME_TYPE_ERR -9
-
+#define AME_OPEN_TYPE_ERR -10
+#define AME_FILE_NOT_OPEN_ERR -11
+#define AME_SCAN_NOT_OPEN_ERR -12
+#define AME_FILE_IS_USED_ERR -13
+#define AME_SCAN_IS_USED_ERR -14
+#define AME_OP_ERR -15
 
 #define EQUAL 1
 #define NOT_EQUAL 2

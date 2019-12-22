@@ -9,7 +9,6 @@ int main(void) {
   AM_Init();
   if (AM_CreateIndex("data.db", INTEGER, sizeof(int), INTEGER,
 			sizeof(int)) != AME_OK) {
-		// sprintf("Errror", "Error in AM_CreateIndex called on %s \n", "data.db");
 		AM_PrintError("Errror");
 	}
   int eNentry;
@@ -21,6 +20,6 @@ int main(void) {
     printf("--------Inserting %d ---------------\n",i );
     AM_InsertEntry(eNentry, (void*)&v1, (void*)&k1);
   }
-  print_tree(eNentry, 'D');
-  print_tree(eNentry, 'I');
+  //print_tree(eNentry, 'D');
+  //print_tree(eNentry, 'I');
 }
