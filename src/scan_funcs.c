@@ -8,16 +8,24 @@
 int init_entry(int scan_index) {
   /* Get useful info */
   int fd = Scans->open[scan_index].file_index;
-  int root = Files->open[fd].root_id;
+  int fileDesc =  Files->open[fd].file_index;
+  /* To get access to the root, get to the first block */
+  int root;
+  BF_Block* first_block;
+  BF_Block_Init(&first_block);
+  CALL_BF(BF_GetBlock(fileDesc, 0, first_block));
+  char* data = BF_Block_GetData(first_block);
+  memcpy(&root, data + sizeof(char) + sizeof(int), sizeof(int));
+  /* Unpin and Destroy the block pointer */
+  BF_UnpinBlock(first_block);
+  BF_Block_Destroy(&first_block);
   char key_type = Files->open[fd].attr_type_1;
   int key_size = Files->open[fd].attr_length_1;
   void* key = malloc(key_size);
   memcpy(key, Scans->open[scan_index].value, key_size);
   /* First find data block in which value is stored */
   Stack* path;
-  printf("heeeeere1\n");
   path = find_data_block(fd, root, key, key_type, key_size);
-  printf("heeeeere2\n");
   int target_block_index = Pop(path);
   printf("DATA BLOCK %d\n", target_block_index);
 

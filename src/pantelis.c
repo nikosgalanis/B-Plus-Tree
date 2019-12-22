@@ -12,7 +12,7 @@ int AM_OpenIndexScan(int fileDesc, int op, void *value) {
   CALL_OR_DIE(find_index(fileDesc, &file_index));
   /* Find the index of the array that we want to insert the scan */
   int scan_index;
-  CALL_OR_DIE(find_empty_scan(&scan_index))
+  CALL_OR_DIE(find_empty_scan(&scan_index));
   /* Check if operator is valid */
   if (op < 1 || op > 6) {
     AM_errno = AME_OP_ERR;
