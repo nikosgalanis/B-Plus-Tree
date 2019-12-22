@@ -42,6 +42,7 @@ int AM_OpenIndexScan(int fileDesc, int op, void *value) {
 
 
 void *AM_FindNextEntry(int scanDesc) {
+  printf("INDEX: %d\n",scanDesc);
   /* Check if scan is open */
   boolean scan_is_open = false;
   int scan_index;
