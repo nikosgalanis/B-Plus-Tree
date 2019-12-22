@@ -413,7 +413,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
 	//memcpy(to_return + sizeof(int), new_block_data + offset, key_size);
 	Record* rec_to_return = malloc(new_record->size);
 	memcpy(rec_to_return, new_block_data + offset, new_record->size);
-  void * key1 = malloc(key_type);
+  void * key1 = malloc(key_size);
   memcpy(key1,rec_to_return->key,key_size);
   memcpy(to_return + sizeof(int), key1, key_size);
   // memcpy(to_return + sizeof(int), rec_to_return->key, key_size);
