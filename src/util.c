@@ -4,36 +4,44 @@
 
 #include "../include/util.h"
 
-int find_empty_index() {
+int find_empty_index(int* index) {
   for (int i = 0; i < MAX_OPEN_FILES; ++i) {
-    if (Files->open[i].file_index == EMPTY)
-      return i;
+    if (Files->open[i].file_index == EMPTY) {
+      *index = i;
+      return AME_OK;
+    }
   }
   return AME_MAX_FILES_ERR;
 }
 
-int find_empty_scan() {
+int find_empty_scan(int* index) {
   for (int i = 0; i < MAX_SCAN_FILES; ++i) {
-    if (Scans->open[i].file_index == EMPTY)
-      return i;
+    if (Scans->open[i].file_index == EMPTY) {
+      *index = i;
+      return AME_OK;
+    }
   }
   return AME_MAX_SCANS_ERR;
 }
 
-int find_index(int fileDesc) {
+int find_index(int fileDesc, int* index) {
   for (int i = 0; i < MAX_OPEN_FILES; ++i) {
-    if (Files->open[i].file_index == fileDesc)
-      return i;
+    if (Files->open[i].file_index == fileDesc) {
+      *index = i;
+      return AME_OK;
+    }
   }
-  return EMPTY;
+  return AME_FILE_NOT_OPEN_ERR;
 }
 
-int find_scan(int fileDesc) {
+int find_scan(int fileDesc, int* index) {
   for (int i = 0; i < MAX_SCAN_FILES; ++i) {
-    if (Scans->open[i].file_index == fileDesc)
-      return i;
+    if (Scans->open[i].file_index == fileDesc) {
+      *index = i;
+      return AME_OK;
+    }
   }
-  return EMPTY;
+  return AME_SCAN_NOT_OPEN_ERR;
 }
 
 char* concat(const char *s1, const char *s2) {
@@ -56,7 +64,7 @@ int type_length_match(char type, int length) {
       }
       break;
     case STRING:
-      if (length < 1 || length > 255 ) {
+      if (length < 1 || length > 255) {
 			  return AME_STRING_ERR;
 			}
 			break;
