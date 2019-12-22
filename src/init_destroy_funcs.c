@@ -41,7 +41,6 @@ void open_files_destroy() {
 }
 
 void open_scans_destroy() {
-  // TODO free value
   free(Scans->open);
 	free(Scans);
 }

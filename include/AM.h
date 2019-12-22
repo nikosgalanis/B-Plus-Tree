@@ -21,6 +21,7 @@ int AM_errno;
 #define AME_FILE_IS_USED_ERR -13
 #define AME_SCAN_IS_USED_ERR -14
 #define AME_OP_ERR -15
+#define AME_SCAN_ERR - 16
 
 #define EQUAL 1
 #define NOT_EQUAL 2

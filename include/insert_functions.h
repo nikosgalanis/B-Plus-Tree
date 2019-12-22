@@ -3,8 +3,6 @@
 /* Includes */
 #include "util.h"
 
-/* Function declarations */
-
 /** Get the key and the value, and create the struct that we are going to use
 	  as a record in our file */
 Record* create_record(int fileDesc, void* key, void* value);
@@ -23,7 +21,6 @@ char* split_index_block(int fileDesc, int block_num, char* new_entry, char key_t
 
 boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record, char key_type);
 boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char key_type, int key_size);
-
 
 boolean record_fits_data(int fileDesc, int target_block_index);
 boolean key_fits_index(int fileDesc, int target_block_index);

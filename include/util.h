@@ -53,6 +53,7 @@ typedef struct {
   int op;
   void* value;
   Entry_index last_entry;
+  boolean error;
 } Scan_info;
 
 typedef struct {

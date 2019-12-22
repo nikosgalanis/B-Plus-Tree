@@ -18,7 +18,7 @@ int AM_OpenIndex(char *fileName) {
 	/* Open the file. and catch a possible error */
   int fileDesc;
   CALL_BF(BF_OpenFile(fileName, &fileDesc));
-	/* Find the index of the array that we want to insert the file */
+	/* Find the index of the array that we want to store the file descriptor */
 	int index;
 	CALL_OR_DIE(find_empty_index(&index));
 	/* Initialize the file info */
@@ -193,6 +193,5 @@ void AM_PrintError(char *errString) {
 void AM_Close() {
   BF_Close();
 	open_files_destroy();
-	printf("here\n");
 	open_scans_destroy();
 }
