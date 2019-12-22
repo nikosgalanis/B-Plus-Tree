@@ -150,7 +150,8 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 		BF_UnpinBlock(first_block);
 		BF_Block_Destroy(&first_block);
 		return AME_OK;
-	 }
+	 	}
+	}
 	 /** If there is no more room, split the block into 2, so the both can hold
 	 		 more records */
 	 else {
