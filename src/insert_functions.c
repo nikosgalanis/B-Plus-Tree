@@ -342,34 +342,7 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   memcpy(&total_records, block_info + sizeof(char), sizeof(int));
   /* Get the position that we want to split. */
   int split_pos = total_records / 2;
-	/* Check if the block can be splitted, aka, it is not full with same keys */
-	Record* curr_r = malloc(new_record->size);
-	Record* next_r = malloc(new_record->size);
-	Record* ith = malloc(new_record->size);
-	int temp_offset = sizeof(char) + 3 * sizeof(int);
-	int i;
-	for (i = 0; i < total_records - 1; ++i) {
-		memcpy(curr_r, block_info + temp_offset, new_record->size);
-		memcpy(next_r, block_info + temp_offset + new_record->size, new_record->size);
-		if (compare(curr_r->key, EQUAL, next_r->key, key_type)) {
-			while (i < total_records) {
-				memcpy(ith, block_info + sizeof(char) + 3 * sizeof(int) + i * new_record->size, new_record->size);
-				if(compare(curr_r->key, NOT_EQUAL, ith->key, key_type)) {
-					split_pos = i;
-					break;
-				}
-				i++;
-			}
-			break;
-		}
-		temp_offset += new_record->size;
-	}
-	split_pos = i;
-	free(curr_r); free(next_r); free(ith);
-	/* In this case, the block can not be splitted, so return NULL */
-	if (split_pos > total_records - 2) {
-		return NULL;
-	}
+
   /* If the key we want to insert is grater than the key of the middle record of
      the block, then we want to keep +1 records in the left block, so use the
      generic compare function that we have */

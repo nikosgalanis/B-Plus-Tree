@@ -2,7 +2,7 @@
  *  main1.c                                                                   *
  *  Το αρχείο αυτό προσομοιώνει τον ρόλο ενός υψηλότερου-επιπέδου αρθρώματος    *
  *  ενός ΣΔΒΔ το οποίο καλεί συναρτήσεις του επιπέδου που ασχολείται με  τον    *
- *  χειρισμό b+-δένδρων (ΒΔ). Η προσοχή του αρχείου επικεντρώνεται              *
+ *  χειρισμό b+-δένδρων (ΒΔ). Η προσοχή του αρχείου επικεντρώνεται              * 
  *  στην δημιουργία ΒΔ δένδρων και στην εισαγωγή και αναζήτηση εγγραφών         *
  ********************************************************************************/
 
@@ -12,7 +12,6 @@
 
 #include "defn.h"
 #include "AM.h"
-#include "util.h"
 
 char empName[40];
 char empAge[40];
@@ -24,6 +23,7 @@ void insertEntries(int eNentry, int eAentry, int eSentry, int eDentry,
 	char errStr[40];
 
 	strcpy(errStr, "Error in AM_InsertEntry");
+
 	if (AM_InsertEntry(eNentry, (void *) ename, &recid) != AME_OK) {
 		sprintf(errStr, "Error in AM_InsertEntry called on %s \n", empName);
 		AM_PrintError(errStr);
@@ -70,6 +70,7 @@ int main() {
 	 *  Αρχικοποίηση των εσωτερικών δομών του λογισμικού των ΒΔ                     *
 	 ********************************************************************************/
 	AM_Init();
+
 	strcpy(empName, "EMP-NAME");
 	strcpy(empAge, "EMP-AGE");
 	strcpy(empSal, "EMP-SAL");
@@ -80,11 +81,13 @@ int main() {
 	/********************************************************************************
 	 *  Δημιουργία ΒΔ που θα περιέχουν πληροφορίες για υπαλλήλους                   *
 	 ********************************************************************************/
+
 	if (AM_CreateIndex(empName, STRING, sizeof(empName) - 1, INTEGER,
 			sizeof(int)) != AME_OK) {
 		sprintf(errStr, "Error in AM_CreateIndex called on %s \n", empName);
 		AM_PrintError(errStr);
 	}
+
 	if (AM_CreateIndex(empAge, INTEGER, sizeof(int), STRING, 39) != AME_OK) {
 		sprintf(errStr, "Error in AM_CreateIndex called on %s \n", empAge);
 		AM_PrintError(errStr);
@@ -108,9 +111,11 @@ int main() {
 		sprintf(errStr, "Error in AM_CreateIndex called on %s \n", empDname);
 		AM_PrintError(errStr);
 	}
+
 	/********************************************************************************
 	 *  ¶νοιγμα των τεσσάρων ΑΚ (με σκοπό την εισαγωγή εγγραφών)                    *
 	 ********************************************************************************/
+
 	if ((eNentry = AM_OpenIndex(empName)) < 0) {
 		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empName);
 		AM_PrintError(errStr);
@@ -130,6 +135,7 @@ int main() {
 		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empDname);
 		AM_PrintError(errStr);
 	}
+
 	/********************************************************************************
 	 *  Εισαγωγή των δυάδων (τιμή1, τιμή2) στα ΑΚ. Υπάρχουν 100 συνολικά εισαγωγές    *
 	 *  σε κάθε αρχείο, οι οποίες διαχωρίζονται με παύλες για δική σας ευκολία         *
@@ -1059,6 +1065,7 @@ int main() {
 		sprintf(errStr, "Error in AM_CloseIndex called on %s \n", empDname);
 		AM_PrintError(errStr);
 	}
+
 	/********************************************************************************
 	 *      Επερώτηση #1                                                            *
 	 *  Έυρεση της εγγραφής "KOKKINOS ARISTOTELHS", γνωρίζοντας ότι το όνομα είναι  *
@@ -1128,7 +1135,6 @@ int main() {
 		AM_PrintError(errStr);
 	}
 
-
 	/********************************************************************************
 	 *  Σάρωση των σχετικών εγγραφών και εκτύπωση των αντίστοιχων ονομάτων          *
 	 ********************************************************************************/
@@ -1155,7 +1161,6 @@ int main() {
 		AM_PrintError(errStr);
 	}
 
-
 	/********************************************************************************
 	 *      Επερώτηση #3                                                            *
 	 *  Αναζήτηση στο αρχείο για τα ονόματα αυτών που δεν είναι 19 χρονών           *
@@ -1163,6 +1168,7 @@ int main() {
 
 	eage = 19;
 	printf("\nRESULT OF QUERY #3\n\n");
+
 	if ((eAentry = AM_OpenIndex(empAge)) < 0) {
 		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empAge);
 		AM_PrintError(errStr);
@@ -1254,6 +1260,7 @@ int main() {
 	/********************************************************************************
 	 *  Τέλος του δοκιμαστικού προγράμματος για εισαγωγές/ αναζητήσεις    *
 	 ********************************************************************************/
+	 
 	AM_Close();
 
 	return 0;
