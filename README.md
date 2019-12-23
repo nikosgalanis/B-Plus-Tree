@@ -40,4 +40,4 @@ You can run the example main by:
 
 [Sofoklis Strompolas](https://github.com/SofoSt).
 
-This projec
+This project was implemented for the needs of the course "Implementation of Database Management Systems"
