@@ -239,7 +239,7 @@ boolean data_sorted_insert(int block_num, int fileDesc, Record* new_record, char
     }
     /* Each time, update the offset */
     offset += new_record->size;
-		free(curr_rec);
+		// free(curr_rec);
   }
   /* If we haven't yet inserted the record, now its time(at the end of the block) */
   memcpy(data + offset, new_record, new_record->size);
@@ -308,12 +308,12 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
       BF_Block_SetDirty(block);
 	    CALL_BF(BF_UnpinBlock(block));
 	    BF_Block_Destroy(&block);
-			free(key_to_insert);
+			// free(key_to_insert);
 			return true;
 		}
 		/* Each time, update the offset */
 		offset += sizeof(int) + key_size;
-		free(curr_key);
+		// free(curr_key);
 	 }
 	 /* If we haven't yet inserted the key, now its time(at the end of the block) */
 	 memcpy(data + offset, new_tuple, 2 * sizeof(int) + key_size);
@@ -323,7 +323,7 @@ boolean index_sorted_insert(int block_num, int fileDesc, char* new_tuple, char k
 	 BF_Block_SetDirty(block);
 	 BF_UnpinBlock(block);
 	 BF_Block_Destroy(&block);
-	 free(key_to_insert);
+	 // free(key_to_insert);
 
 	 /* Everything is ok */
 	 return true;
@@ -428,8 +428,8 @@ char* split_data_block(int fileDesc, int block_num, Record* new_record, char key
   BF_UnpinBlock(new_block);
   BF_Block_Destroy(&block);
   BF_Block_Destroy(&new_block);
-	free(rec_to_return);
-	free(key1);
+	// free(rec_to_return);
+	// free(key1);
   /* Return the key of the record we want as an index */
   return to_return;
 }
@@ -523,8 +523,8 @@ char* split_index_block(int fileDesc, int block_num, char* new_entry, char key_t
   BF_UnpinBlock(new_block);
   BF_Block_Destroy(&block);
   BF_Block_Destroy(&new_block);
-	free(key_to_return);
-	free(middle);
+	// free(key_to_return);
+	// free(middle);
   /* Return the string we want to append to the parent */
   return to_return;
 }

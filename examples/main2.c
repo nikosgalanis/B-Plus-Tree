@@ -63,10 +63,10 @@ int main() {
 		AM_PrintError(errStr);
 	}
 
-	if ((eAentry = AM_OpenIndex(empAge)) < 0) {
-		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empAge);
-		AM_PrintError(errStr);
-	}
+	// if ((eAentry = AM_OpenIndex(empAge)) < 0) {
+	// 	sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empAge);
+	// 	AM_PrintError(errStr);
+	// }
 
 	if ((eSentry = AM_OpenIndex(empSal)) < 0) {
 		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empSal);
@@ -114,10 +114,10 @@ int main() {
 		AM_PrintError(errStr);
 	}
 
-	if (AM_CloseIndex(eAentry) != AME_OK) {
-		sprintf(errStr, "Error in AM_CloseIndex called on %s \n", empAge);
-		AM_PrintError(errStr);
-	}
+	// if (AM_CloseIndex(eAentry) != AME_OK) {
+	// 	sprintf(errStr, "Error in AM_CloseIndex called on %s \n", empAge);
+	// 	AM_PrintError(errStr);
+	// }
 
 	/********************************************************************************
 	 *      Επερώτηση #1                                                            *
@@ -127,10 +127,10 @@ int main() {
 	esal = 398.10;
 	printf("\nRESULT OF QUERY #2a\n\n");
 
-	if ((eSentry = AM_OpenIndex(empSal)) < 0) {
-		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empSal);
-		AM_PrintError(errStr);
-	}
+	// if ((eSentry = AM_OpenIndex(empSal)) < 0) {
+	// 	sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empSal);
+	// 	AM_PrintError(errStr);
+	// }
 
 	/********************************************************************************
 	 *  'Ανοιγμα της σάρωσης                                                         *
@@ -156,10 +156,10 @@ int main() {
 		AM_PrintError(errStr);
 	}
 
-	if (AM_CloseIndex(eSentry) != AME_OK) {
-		sprintf(errStr, "Error in AM_CloseIndex called on %s \n", empSal);
-		AM_PrintError(errStr);
-	}
+	// if (AM_CloseIndex(eSentry) != AME_OK) {
+	// 	sprintf(errStr, "Error in AM_CloseIndex called on %s \n", empSal);
+	// 	AM_PrintError(errStr);
+	// }
 
 	/********************************************************************************
 	 *      Επερώτηση #2                                                            *
@@ -169,11 +169,11 @@ int main() {
 
 	eage = 19;
 	printf("\nRESULT OF QUERY #3a\n\n");
-
-	if ((eAentry = AM_OpenIndex(empAge)) < 0) {
-		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empAge);
-		AM_PrintError(errStr);
-	}
+	//
+	// if ((eAentry = AM_OpenIndex(empAge)) < 0) {
+	// 	sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empAge);
+	// 	AM_PrintError(errStr);
+	// }
 
 	/********************************************************************************
 	 *  'Ανοιγμα της σάρωσης                                                         *
@@ -200,10 +200,10 @@ int main() {
 		AM_PrintError(errStr);
 	}
 
-	if (AM_CloseIndex(eAentry) != AME_OK) {
-		sprintf(errStr, "Error in AM_CloseIndex called on %s \n", empAge);
-		AM_PrintError(errStr);
-	}
+	// if (AM_CloseIndex(eAentry) != AME_OK) {
+	// 	sprintf(errStr, "Error in AM_CloseIndex called on %s \n", empAge);
+	// 	AM_PrintError(errStr);
+	// }
 
 	/********************************************************************************
 	 *  Δημιουργία ενός ΒΔ που θα περιέχει πληροφορίες για τμήματα                  *
@@ -217,10 +217,10 @@ int main() {
 	 *  ¶νοιγμα του νέου ΒΔ με σκοπό την εισαγωγή εγγραφών                          *
 	 ********************************************************************************/
 
-	if ((dNentry = AM_OpenIndex(deptName)) < 0) {
-		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", deptName);
-		AM_PrintError(errStr);
-	}
+	// if ((dNentry = AM_OpenIndex(deptName)) < 0) {
+	// 	sprintf(errStr, "Error in AM_OpenIndex called on %s \n", deptName);
+	// 	AM_PrintError(errStr);
+	// }
 
 	/********************************************************************************
 	 *  Εισαγωγή των δυάδων (τιμή1,τιμή2) στο νέο αρχείο                            *
@@ -327,11 +327,11 @@ int main() {
 	/********************************************************************************
 	 *  Τέλος των εισαγωγών                                                         *
 	 ********************************************************************************/
-
-	if (AM_CloseIndex(dNentry) != AME_OK) {
-		sprintf(errStr, "Error in AM_CloseIndex called on %s \n", deptName);
-		AM_PrintError(errStr);
-	}
+	//
+	// if (AM_CloseIndex(dNentry) != AME_OK) {
+	// 	sprintf(errStr, "Error in AM_CloseIndex called on %s \n", deptName);
+	// 	AM_PrintError(errStr);
+	// }
 
 	/********************************************************************************
 	 *      Eπερώτηση # 3                                                           *
@@ -343,15 +343,15 @@ int main() {
 	strcpy(edname, "TYRIA");
 	printf("\nRESULT OF QUERY #5\n\n");
 
-	if ((eDentry = AM_OpenIndex(empDname)) < 0) {
-		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empDname);
-		AM_PrintError(errStr);
-	}
+	// if ((eDentry = AM_OpenIndex(empDname)) < 0) {
+	// 	sprintf(errStr, "Error in AM_OpenIndex called on %s \n", empDname);
+	// 	AM_PrintError(errStr);
+	// }
 
-	if ((dNentry = AM_OpenIndex(deptName)) < 0) {
-		sprintf(errStr, "Error in AM_OpenIndex called on %s \n", deptName);
-		AM_PrintError(errStr);
-	}
+	// if ((dNentry = AM_OpenIndex(deptName)) < 0) {
+	// 	sprintf(errStr, "Error in AM_OpenIndex called on %s \n", deptName);
+	// 	AM_PrintError(errStr);
+	// }
 
 	/********************************************************************************
 	 *  ¶ναζήτηση στο εξωτερικό αρχείο                                              *
@@ -429,7 +429,7 @@ int main() {
 	/********************************************************************************
 	 *  Τέλος του προγράμματος                                                      *
 	 ********************************************************************************/
-	 
+
 	AM_Close();
 
 	return 0;

@@ -25,6 +25,7 @@ int init_entry(int scan_index) {
   BF_UnpinBlock(first_block);
   BF_Block_Destroy(&first_block);
   /* First find data block in which value is stored */
+
   Stack* path;
   path = find_data_block(fileDesc, root, key, key_type, key_size);
   int target_block_index = Pop(path);
