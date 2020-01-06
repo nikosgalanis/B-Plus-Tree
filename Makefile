@@ -1,3 +1,5 @@
+ALL:
+	gcc -I ./include/ -L ./lib/ -Wl,-rpath,./lib/ ./examples/ALL.c ./src/*.c  -lbf -o ./build/ALL
 main1:
 	@echo " Compile main1 ...";
 	gcc -I ./include/ -L ./lib/ -Wl,-rpath,./lib/ ./examples/main1.c ./src/*.c  -lbf -o ./build/main1
