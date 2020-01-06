@@ -12,7 +12,7 @@ main3:
 
 test:
 	@echo " Compile test main ...";
-	gcc -I ./include/ -L ./lib/ -Wl,-rpath,./lib/ ./examples/test_main.c ./src/*.c -lbf -o ./build/test_main -lm
+	gcc -g3 -I ./include/ -L ./lib/ -Wl,-rpath,./lib/ ./examples/test_main.c ./src/*.c -lbf -o ./build/test_main -lm
 
 bf:
 	@echo " Compile bf_main ...";

@@ -318,6 +318,10 @@ int AM_InsertEntry(int fileDesc, void *value1, void *value2) {
 	BF_Block_SetDirty(first_block);
 	BF_UnpinBlock(first_block);
 	BF_Block_Destroy(&first_block);
+	BF_Block* index;
+	BF_Block_Init(&index);
+	BF_GetBlock(fileDesc, 1, index);
+	char* ind_data = BF_Block_GetData(index);
 	return AME_OK;
 }
 

@@ -200,7 +200,7 @@ Stack* find_data_block(int file_desc, int root_num, void* key, char key_type, in
 			void* block_key = malloc(key_size);
 			memcpy(block_key, block_info + block_offset, key_size);
 			/* Compare key with block key */
-			int result = compare(key, LESS_THAN_OR_EQUAL, block_key, key_type);
+			int result = compare(key, LESS_THAN, block_key, key_type);
 			/* if given key <= block key go to corresponding block */
 			if (result) {
 				/* Update the found variable */
