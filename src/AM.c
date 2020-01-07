@@ -443,7 +443,7 @@ void AM_PrintError(char *errString) {
     case AME_BF_ERR:
       printf("BF error occured!\n");
       break;
-		case AME_EOF:
+		case AME_EOF: 
 			printf("There are no other entries which meet the requirements of the open scan.\n\n");
 			break;
     case AME_MEM_ERR:
@@ -497,6 +497,6 @@ void AM_PrintError(char *errString) {
 /* Close the AM level */
 void AM_Close() {
   BF_Close();
-	open_files_destroy();
-	open_scans_destroy();
+	// open_files_destroy();
+	// open_scans_destroy();
 }

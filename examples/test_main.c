@@ -62,7 +62,6 @@ int main(void) {
     AM_PrintError("Errror");
   }
   /* Now we are going to insert vcalues in our 1st B+ tree file */
-  // char* name = malloc(11 * sizeof(int));
   int key,value;
   printf("Time to insert some entries \n\n");
   for(int i = 0; i < 10; ++i) {
@@ -74,11 +73,6 @@ int main(void) {
 		key = rand() % 10000000 ;
     value = rand() % N_OF_NAMES;
     /* Catch a possible error */
-		// if(key == 93151555){
-		//
-		// 	print_tree(eNentry, 'I'); printf("\n");
-		// 	print_tree(eNentry, 'D');	printf("\n");
-		// }
 
     if (AM_InsertEntry(eNentry, (void *) &key, (void*)&value) != AME_OK) {
       sprintf(errStr, "Error in AM_InsertEntry called on %s \n", "names_file.db");
@@ -87,29 +81,29 @@ int main(void) {
     }
 
   }
-  // /* Create a scan, to find the money of the entry before "Galanis" */
-  // int scan1;
-  // printf("Initialize a search in our tree\n\n");
-  // char* search_name = "Galanis";
-  // if ((scan1 = AM_OpenIndexScan(eNentry, LESS_THAN, (void *) search_name)) < 0) {
-	// 	sprintf(errStr, "Error in AM_OpenIndexScan called on %s \n", "names_file.db");
-	// 	AM_PrintError(errStr);
-	// }
-  // /* Search the tree */
-  // int* ivalue = NULL;
-  // if ((ivalue = (int*)AM_FindNextEntry(scan1)) != NULL)
-  //   printf("Money of the first entry before %s is %d \n", search_name, *ivalue);
-  // else {
-  //   sprintf(errStr, "Error in AM_FindNextEntry called on scan %d \n\n", scan1);
-  //   AM_PrintError(errStr);
-  // }
-  // /* Close the scan */
-  // printf("Closing the scan\n\n");
-  // if (AM_CloseIndexScan(scan1) != AME_OK) {
-  //   sprintf(errStr, "Error in AM_CloseIndexScan called on scan %d \n",
-  //       scan1);
-  //   AM_PrintError(errStr);
-  // }
+  /* Create a scan, to find the money of the entry before "Galanis" */
+  int scan1;
+  printf("Initialize a search in our tree\n\n");
+  char* search_name = "Galanis";
+  if ((scan1 = AM_OpenIndexScan(eNentry, LESS_THAN, (void *) search_name)) < 0) {
+		sprintf(errStr, "Error in AM_OpenIndexScan called on %s \n", "names_file.db");
+		AM_PrintError(errStr);
+	}
+  /* Search the tree */
+  int* ivalue = NULL;
+  if ((ivalue = (int*)AM_FindNextEntry(scan1)) != NULL)
+    printf("Money of the first entry before %s is %d \n", search_name, *ivalue);
+  else {
+    sprintf(errStr, "Error in AM_FindNextEntry called on scan %d \n\n", scan1);
+    AM_PrintError(errStr);
+  }
+  /* Close the scan */
+  printf("Closing the scan\n\n");
+  if (AM_CloseIndexScan(scan1) != AME_OK) {
+    sprintf(errStr, "Error in AM_CloseIndexScan called on scan %d \n",
+        scan1);
+    AM_PrintError(errStr);
+  }
 
   /* Close the B+ tree file */
   printf("Closing the file\n\n");
@@ -125,7 +119,7 @@ int main(void) {
      AM_PrintError(errStr);
   }
 
-  AM_Close();
+	AM_Close();
 
 
 
