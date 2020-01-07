@@ -28,8 +28,11 @@ Download source code by typing:
 In the directory examples, there is a simple main aimed to insert entries in the file, and then search for one of them. 
 
 ## Compiling and running
-You can run the example main by: 
+There are 2 main functions implemented to test the functionability of the B+ Tree.
+You can run either main by:
 ``` ./run.sh```
+or 
+``` ./main.sh```
 
 
 ## Contributors 
