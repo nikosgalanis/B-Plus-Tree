@@ -41,6 +41,6 @@ or
 
 [Pantelis Papageorgiou](https://github.com/panpapag).
 
-[Sofoklis Strompolas](https://github.com/SofoSt).
+[SofoSt](https://github.com/SofoSt).
 
 This project was implemented for the needs of the course "Implementation of Database Management Systems"
